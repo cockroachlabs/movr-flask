@@ -1,0 +1,11 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-movr
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: movr-ip
+    kubernetes.io/ingress.class: gce-multi-cluster
+spec:
+  backend:
+    serviceName: movr-app
+    servicePort: 80

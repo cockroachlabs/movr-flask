@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+{% if current_user.is_active %}
+  <p class="text-center">You are logged in as {{ current_user.username }}. To register a different user, first <a href="/logout">log out</a>.</p>
+{% else %}
+  <div class="d-flex">
+      <div class="col-md-4">
+          {{ wtf.quick_form(form) }}
+      </div>
+  </div>
+{% endif %}
+{% endblock %}

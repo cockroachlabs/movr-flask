@@ -1,0 +1,7 @@
+*.pyc
+flaskenv/*
+.vscode/*
+Pipfile.lock
+*.env
+.idea/vcs.xm
+certs/

@@ -1,0 +1,42 @@
+<div class="navbar navbar-default">
+  <a class="navbar-brand">
+      <img src="/static/movr-symbol.png" height="30">
+  </a>
+  {% if available %}
+  <div class="navbar">
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="/">Home</a>
+      </li>
+      {% if current_user.is_active %}
+        <li>
+          <a href="/vehicles">Vehicles</a>
+        </li>
+        <li>
+          <a href="/rides">Rides</a>
+        </li>
+        <li>
+          <a href="/users">Users</a>
+        </li>
+        <li>
+          <a href="/vehicles/add">Add a vehicle</a>
+        </li>
+        <li>
+          <a href="/users/{{ current_user.id }}">Your profile</a>
+        </li>
+        <li>
+          <a href="/logout">Log out</a>
+        </li>
+      {% else %}
+        <li>
+          <a href="/login">Log in</a>
+        </li>
+        <li>
+          <a href="/register">Sign up</a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+  {% else %}
+  {% endif %}
+</div>
