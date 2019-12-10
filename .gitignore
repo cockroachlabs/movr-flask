@@ -1,7 +1,7 @@
 *.pyc
 flaskenv/*
 .vscode/*
-Pipfile.lock
-*.env
+*.lock
 .idea/vcs.xm
 certs/
+
