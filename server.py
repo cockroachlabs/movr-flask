@@ -96,6 +96,33 @@ def register():
         return render_template('register.html', title='Sign Up', form=form, available=session['region'])
 
 
+# Users page
+@login_required
+@app.route('/users', methods=['GET'])
+def users():
+    if current_user.is_authenticated:
+        users = movr.get_users(session['city'])
+        return render_template('users.html', title='Users', users=users, available=session['region'])
+    else:
+        flash('You need to log in to see active users in your city!')
+        return redirect(url_for('login', _external=True, _scheme=protocol))
+
+
+# User page
+@login_required
+@app.route('/users/<user_id>', methods=['GET'])
+def user(user_id):
+    v = movr.get_vehicles(city=current_user.city)
+    r = movr.get_rides(rider_id=current_user.id)
+    form_u = RemoveUserForm()
+    form_v = RemoveVehicleForm()
+    if current_user.is_authenticated and user_id == current_user.id:
+        return render_template('user.html', title='{0} {1}'.format(current_user.first_name, current_user.last_name), form_u=form_u, form_v=form_v, vehicles=v, available=session['region'], API_KEY = app.config.get('API_KEY'))
+    else:
+        flash('You need to log in to see your profile!')
+        return redirect(url_for('login', _external=True, _scheme=protocol))
+
+
 # Remove user route
 @login_required
 @app.route('/users/remove/<user_id>', methods=['POST'])
@@ -191,32 +218,6 @@ def end_ride(ride_id):
     except Exception as error:
         flash('{0}'.format(error))
         return redirect(url_for('rides', _external=True, _scheme=protocol))
-
-
-# Users page
-@login_required
-@app.route('/users', methods=['GET'])
-def users():
-    if current_user.is_authenticated:
-        users = movr.get_users(session['city'])
-        return render_template('users.html', title='Users', users=users, available=session['region'])
-    else:
-        flash('You need to log in to see active users in your city!')
-        return redirect(url_for('login', _external=True, _scheme=protocol))
-
-# User page
-@login_required
-@app.route('/users/<user_id>', methods=['GET'])
-def user(user_id):
-    v = movr.get_vehicles(city=current_user.city)
-    r = movr.get_rides(rider_id=current_user.id)
-    form_u = RemoveUserForm()
-    form_v = RemoveVehicleForm()
-    if current_user.is_authenticated and user_id == current_user.id:
-        return render_template('user.html', title='{0} {1}'.format(current_user.first_name, current_user.last_name), form_u=form_u, form_v=form_v, vehicles=v, available=session['region'], API_KEY = app.config.get('API_KEY'))
-    else:
-        flash('You need to log in to see your profile!')
-        return redirect(url_for('login', _external=True, _scheme=protocol))
 
 
 if __name__ == '__main__':
