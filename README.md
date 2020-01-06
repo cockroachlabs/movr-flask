@@ -139,7 +139,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
     $ gcloud auth application-default login
     ~~~
 
-1. Install kubectl.
+1. If you haven't already, install kubectl.
 
     ~~~ shell
     $ gcloud components install kubectl
@@ -160,7 +160,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
     $ docker push gcr.io/<gcp_project>/movr-app:v1
     ~~~
 
-1. Create a K8s cluster for all three regions.
+1. Create a K8s cluster in each region.
 
     ~~~ shell
     $ gcloud config set compute/zone us-east1-b && \
