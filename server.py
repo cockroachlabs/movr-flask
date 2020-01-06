@@ -8,7 +8,7 @@ from sqlalchemy.exc import DBAPIError
 from movr.movr import MovR
 from web.forms import CredentialForm, RegisterForm, VehicleForm, StartRideForm, EndRideForm, RemoveUserForm, RemoveVehicleForm
 from web.config import Config
-from web.utils import get_region
+from web.geoutils import get_region
 
 # Initialize the app
 app = Flask(__name__)
@@ -21,7 +21,7 @@ protocol = ('https', 'http')[app.config.get('DEBUG') == 'True']
 conn_string = app.config.get('DB_URI')
 movr = MovR(conn_string)
 
-# Define user_loader function for login manager
+# Define user_loader function for LoginManager
 @login.user_loader
 def load_user(user_id):
     return movr.get_user(user_id=user_id)
@@ -36,15 +36,17 @@ def home_page():
     else:
         try:
             session['city'] = request.headers.get("X-City").lower()
+            # This header attribute is passed by the HTTP load balancer, to its configured backend. The header must be configured manually in the cloud service provider's console to include this attribute. See README for more details.
         except Exception as error:
             session['city'] = 'new york'
-            flash('{0} {1}'.format(error, '\nUnable to retrieve client city information.\n Application is now assuming you are in New York.'))
+            flash('{0} {1}'.format(
+                error, '\nUnable to retrieve client city information.\n Application is now assuming you are in New York.'))
     session['region'] = get_region(session['city'])
     session['riding'] = None
     return render_template('home.html', available=session['region'], city=session['city'])
 
 
-# Login page 
+# Login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -55,7 +57,8 @@ def login():
             try:
                 user = movr.get_user(username=form.username.data)
                 if user is None or not check_password_hash(user.password_hash, form.password.data):
-                    flash(Markup('Invalid user credentials.<br>If you aren\'t registered with MovR, go <a href="{0}">Sign Up</a>!').format(url_for('register', _external=True, _scheme=protocol)))
+                    flash(Markup('Invalid user credentials.<br>If you aren\'t registered with MovR, go <a href="{0}">Sign Up</a>!').format(
+                        url_for('register', _external=True, _scheme=protocol)))
                     return redirect(url_for('login', _external=True, _scheme=protocol))
                 login_user(user)
                 return redirect(url_for('home_page', _external=True, _scheme=protocol))
@@ -76,7 +79,7 @@ def logout():
 
 
 # Registration page
-@app.route('/register', methods=['GET','POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return render_template('register.html', title='Sign Up', available=session['region'])
@@ -84,11 +87,14 @@ def register():
         form = RegisterForm()
         if form.validate_on_submit():
             try:
-                movr.add_user(city=form.city.data, first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data, username=form.username.data, password=form.password.data)
-                flash('Registration successful! You can now log in as {0}.'.format(form.username.data))
+                movr.add_user(city=form.city.data, first_name=form.first_name.data, last_name=form.last_name.data,
+                              email=form.email.data, username=form.username.data, password=form.password.data)
+                flash('Registration successful! You can now log in as {0}.'.format(
+                    form.username.data))
                 return redirect(url_for('login', _external=True, _scheme=protocol))
             except DBAPIError as sql_error:
-                flash('{0} {1}'.format(sql_error, '\nRegistration failed. Make sure that you choose a unique username!'))
+                flash('{0} {1}'.format(
+                    sql_error, '\nRegistration failed. Make sure that you choose a unique username!'))
                 return redirect(url_for('register', _external=True, _scheme=protocol))
             except Exception as error:
                 flash('{0}'.format(error))
@@ -117,7 +123,7 @@ def user(user_id):
     form_u = RemoveUserForm()
     form_v = RemoveVehicleForm()
     if current_user.is_authenticated and user_id == current_user.id:
-        return render_template('user.html', title='{0} {1}'.format(current_user.first_name, current_user.last_name), form_u=form_u, form_v=form_v, vehicles=v, available=session['region'], API_KEY = app.config.get('API_KEY'))
+        return render_template('user.html', title='{0} {1}'.format(current_user.first_name, current_user.last_name), form_u=form_u, form_v=form_v, vehicles=v, available=session['region'], API_KEY=app.config.get('API_KEY'))
     else:
         flash('You need to log in to see your profile!')
         return redirect(url_for('login', _external=True, _scheme=protocol))
@@ -131,7 +137,7 @@ def remove_user(user_id):
     logout_user()
     session['riding'] = None
     flash('You have successfully deleted your account.')
-    return redirect(url_for('home', _external=True, _scheme=protocol))
+    return redirect(url_for('home_page', _external=True, _scheme=protocol))
 
 
 # Vehicles page
@@ -140,17 +146,18 @@ def remove_user(user_id):
 def vehicles():
     form = StartRideForm()
     vehicles = movr.get_vehicles(session['city'])
-    return render_template('vehicles.html', title='Vehicles', vehicles=vehicles, form=form, available=session['region'], API_KEY = app.config.get('API_KEY')) 
+    return render_template('vehicles.html', title='Vehicles', vehicles=vehicles, form=form, available=session['region'], API_KEY=app.config.get('API_KEY'))
 
 
 # Add vehicles route
 @login_required
-@app.route('/vehicles/add', methods=['GET','POST'])
+@app.route('/vehicles/add', methods=['GET', 'POST'])
 def add_vehicle():
     form = VehicleForm()
     if form.validate_on_submit():
         try:
-            movr.add_vehicle(city=current_user.city, owner_id=current_user.id, last_location=form.location.data, type=form.type.data, color=form.color.data, brand=form.brand.data, status='available', is_owner=current_user.is_owner)
+            movr.add_vehicle(city=current_user.city, owner_id=current_user.id, last_location=form.location.data, type=form.type.data,
+                             color=form.color.data, brand=form.brand.data, status='available', is_owner=current_user.is_owner)
             flash('Vehicle added!')
             return redirect(url_for('vehicles', _external=True, _scheme=protocol))
         except Exception as error:
@@ -188,7 +195,8 @@ def rides():
 def start_ride(vehicle_id):
     try:
         if session['riding']:
-            flash('You are already riding. End your current ride before starting a new one!')
+            flash(
+                'You are already riding. End your current ride before starting a new one!')
             return redirect(url_for('rides', _external=True, _scheme=protocol))
         else:
             rides = movr.get_rides(rider_id=current_user.id)
@@ -196,14 +204,15 @@ def start_ride(vehicle_id):
                 if r['end_time'] == None:
                     session['riding'] = True
                     pass
-        movr.start_ride(city=session['city'], rider_id=current_user.id, rider_city=current_user.city, vehicle_id=vehicle_id)
+        movr.start_ride(city=session['city'], rider_id=current_user.id,
+                        rider_city=current_user.city, vehicle_id=vehicle_id)
         session['riding'] = True
         flash('Ride started.')
         return redirect(url_for('rides', _external=True, _scheme=protocol))
     except Exception as error:
         flash('{0}'.format(error))
         return redirect(url_for('vehicles', _external=True, _scheme=protocol))
-    
+
 
 # End ride route
 @login_required
@@ -211,7 +220,8 @@ def start_ride(vehicle_id):
 def end_ride(ride_id):
     try:
         form = EndRideForm()
-        movr.end_ride(city=session['city'], ride_id=ride_id, location=form.location.data)
+        movr.end_ride(city=session['city'],
+                      ride_id=ride_id, location=form.location.data)
         session['riding'] = False
         flash('Ride ended.')
         return redirect(url_for('rides', _external=True, _scheme=protocol))

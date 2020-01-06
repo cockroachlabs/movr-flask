@@ -9,7 +9,18 @@ from flask_login import UserMixin
 
 Base = declarative_base()
 
+
 class User(Base, UserMixin):
+    """
+    Represents rows of the users table. 
+
+    Arguments:
+        Base {DeclaritiveMeta} -- Base class for declarative SQLAlchemy class definitions that produces appropriate `sqlalchemy.schema.Table` objects.
+        UserMixin {UserMixin} -- Mixin object that provides default implementations for the methods that Flask-Login expects user objects to have.
+
+    Returns:
+        User -- Instance of the User class.
+    """
     __tablename__ = 'users'
     id = Column(UUID, default=str(uuid.uuid4()), primary_key=True)
     city = Column(String, primary_key=True)
@@ -21,13 +32,25 @@ class User(Base, UserMixin):
     is_owner = Column(Boolean)
 
     def set_password(self, password):
+        """
+        Hash the password set by the user at registration.
+        """
         self.password_hash = generate_password_hash(password)
 
     def __repr__(self):
-        return "<User(city='%s', id='%s', name='%s')>" % (self.city, self.id, self.first_name + ' ' + self.last_name)
+        return "<User(city='{0}', id='{1}', name='{2}')>".format(self.city, self.id, self.first_name + ' ' + self.last_name)
 
 
 class Vehicle(Base):
+    """
+    Represents rows of the vehicles table. 
+
+    Arguments:
+        Base {DeclaritiveMeta} -- Base class for declarative SQLAlchemy class definitions that produces appropriate `sqlalchemy.schema.Table` objects.
+
+    Returns:
+        Vehicle -- Instance of the Vehicle class.
+    """
     __tablename__ = 'vehicles'
     id = Column(UUID, default=str(uuid.uuid4()), primary_key=True)
     city = Column(String, primary_key=True)
@@ -40,10 +63,19 @@ class Vehicle(Base):
     brand = Column(String)
 
     def __repr__(self):
-        return "<Vehicle(city='%s', id='%s', type='%s', status='%s')>" % (self.city, self.id, self.type, self.status)
+        return "<Vehicle(city='{0}', id='{1}', type='{2}', status='{3}')>".format(self.city, self.id, self.type, self.status)
 
 
 class Ride(Base):
+    """
+    Represents rows of the rides table. 
+
+    Arguments:
+        Base {DeclaritiveMeta} -- Base class for declarative SQLAlchemy class definitions that produces appropriate `sqlalchemy.schema.Table` objects.
+
+    Returns:
+        Ride -- Instance of the Ride class.
+    """
     __tablename__ = 'rides'
     id = Column(UUID, default=str(uuid.uuid4()), primary_key=True)
     city = Column(String, ForeignKey('vehicles.city'), primary_key=True)
@@ -57,5 +89,4 @@ class Ride(Base):
     length = Column(Interval)
 
     def __repr__(self):
-        return "<Ride(city='%s', id='%s', rider_id='%s', vehicle_id='%s')>" % (self.city, self.id, self.rider_id, self.vehicle_id)
-
+        return "<Ride(city='{0}', id='{1}', rider_id='{2}', vehicle_id='{3}')>".format(self.city, self.id, self.rider_id, self.vehicle_id)

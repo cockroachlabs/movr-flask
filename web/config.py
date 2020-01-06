@@ -1,7 +1,10 @@
 # This file defines classes for flask configuration
 import os
 
+
 class Config(object):
+    """Flask configuration class.
+    """
     DEBUG = os.environ['DEBUG']
     SECRET_KEY = os.environ['SECRET_KEY']
     API_KEY = os.environ['API_KEY']
