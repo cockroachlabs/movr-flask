@@ -3,48 +3,56 @@
 
 {% block app_content %}
 {% if current_user.is_active %}
-    <p class="text-center">You are logged in as {{ current_user.username }}.</p>
-    <p class="text-center">You are registered in <bf class="text-capitalize">{{ current_user.city }}</bf>.</p>
-    <p class="text-center">Your user ID is {{ current_user.id }}.</p>
+<p class="text-center">You are logged in as {{ current_user.username }}.</p>
+<p class="text-center">You are registered in <bf class="text-capitalize">{{ current_user.city }}</bf>.</p>
+<p class="text-center">Your user ID is {{ current_user.id }}.</p>
 {% endif %}
 <hr>
 {% if current_user.is_owner %}
-    <h3 class="text-center">Your vehicles</h4>
-        {% for vehicle in vehicles %}
-            {% if vehicle.owner_id == current_user.id %}
-                <div class="container">
-                    <div class="row align-items-center">
-                        <a class="list-group-item">
-                            <div class="col-md" style="display: inline-block;">
-                                <h5><bf class="text-capitalize">{{ vehicle.type }}</bf> <span style='font-size:20px;'>{% if vehicle.type == 'scooter' %}&#128756;{% elif vehicle.type == 'bike' %}&#128690;{% elif vehicle.type == 'skateboard' %}&#128761;{% endif %}</span></h5>
-                                <p>Last location: <bf class="text-capitalize">{{ vehicle.last_location }}</bf></p>
-                                <p>Color: <bf class="text-capitalize">{{ vehicle.color }}</bf></p>
-                                <p>Brand: <bf class="text-capitalize">{{ vehicle.brand }}</bf></p>
-                                <p>Date added: <bf class="text-capitalize">{{ vehicle.date_added }}</bf></p>
-                                {% if vehicle.status == 'available' %}
-                                    <p class="alert alert-success text-center" role="alert" style="width: 15rem;">Available</p>
-                                    <form class="form form-horizontal" method="POST" action="/vehicles/remove/{{ vehicle.id }}">
-                                        {{ wtf.form_field(form_v.submit) }}
-                                    </form>
-                                {% else %}
-                                    <p class="alert alert-warning text-center" role="alert" style="width: 15rem;">In use</p>
-                                {% endif %}
-                            </div>
-                            <div class="col-md" height="500" width="400" style="display: inline-block;">
-                                <iframe src="https://www.google.com/maps/embed/v1/place?q={{ vehicle.last_location }}&key={{ API_KEY }}"></iframe>
-                            </div>
-                        </a>
-                    </div>
+<h3 class="text-center">Your vehicles</h4>
+    {% for vehicle in vehicles %}
+    {% if vehicle.owner_id == current_user.id %}
+    <div class="container">
+        <div class="row align-items-center">
+            <a class="list-group-item">
+                <div class="col-md" style="display: inline-block;">
+                    <h5>
+                        <bf class="text-capitalize">{{ vehicle.type }}</bf> <span
+                            style='font-size:20px;'>{% if vehicle.type == 'scooter' %}&#128756;{% elif vehicle.type == 'bike' %}&#128690;{% elif vehicle.type == 'skateboard' %}&#128761;{% endif %}</span>
+                    </h5>
+                    <p>Last location: <bf class="text-capitalize">{{ vehicle.last_location }}</bf>
+                    </p>
+                    <p>Color: <bf class="text-capitalize">{{ vehicle.color }}</bf>
+                    </p>
+                    <p>Brand: <bf class="text-capitalize">{{ vehicle.brand }}</bf>
+                    </p>
+                    <p>Date added: <bf class="text-capitalize">{{ vehicle.date_added }}</bf>
+                    </p>
+                    {% if vehicle.status == 'available' %}
+                    <p class="alert alert-success text-center" role="alert" style="width: 15rem;">Available</p>
+                    <form class="form form-horizontal" method="POST" action="/vehicles/remove/{{ vehicle.id }}">
+                        {{ wtf.form_field(form_v.submit) }}
+                    </form>
+                    {% else %}
+                    <p class="alert alert-warning text-center" role="alert" style="width: 15rem;">In use</p>
+                    {% endif %}
                 </div>
-            {% endif %}
-        {% endfor %}
-{% endif %}
-{% if not vehicles %}
+                <div class="col-md" height="500" width="400" style="display: inline-block;">
+                    <iframe
+                        src="https://www.google.com/maps/embed/v1/place?q={{ vehicle.last_location }}&key={{ API_KEY }}"></iframe>
+                </div>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% if not vehicles %}
     <hr>
-    <div class="text-center"> 
+    <div class="text-center">
         <form class="form form-horizontal" method="POST" action="/users/remove/{{ current_user.id }}">
             {{ wtf.form_field(form_u.submit) }}
         </form>
     </div>
-{% endif %}
-{% endblock %}
+    {% endif %}
+    {% endblock %}

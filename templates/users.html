@@ -4,15 +4,16 @@
 <div class="container">
     <div class="row align-items-center">
         {% for user in users %}
-            <a class="list-group-item">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5>{{ user.first_name }} {{ user.last_name }}</h5>
-                </div>
-                <p>Home city: <bf class="text-capitalize">{{ user.city }}</bf></p>
-                {% if user.is_owner %}
-                    <p>This user is also a vehicle owner!</p>
-                {% endif %}
-            </a>
+        <a class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+                <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+            </div>
+            <p>Home city: <bf class="text-capitalize">{{ user.city }}</bf>
+            </p>
+            {% if user.is_owner %}
+            <p>This user is also a vehicle owner!</p>
+            {% endif %}
+        </a>
         {% endfor %}
     </div>
 </div>

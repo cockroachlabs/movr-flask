@@ -2,16 +2,19 @@
 
 {% block app_content %}
 {% if not available %}
-    <p class="text-center">Unfortunately, MovR is not yet available in <bf class="text-capitalize">{{ city }}</bf>. Try coming back later!</p>
+<p class="text-center">Unfortunately, MovR is not yet available in <bf class="text-capitalize">{{ city }}</bf>. Try
+  coming back later!</p>
 {% else %}
-  {% if current_user.is_active %}
-    <h1 class="text-center">Welcome <bf class="text-capitalize">{{ current_user.first_name }}</bf>!</h1>
-    <hr>
-    <p class="text-center">You are logged in and ready to ride in <bf class="text-capitalize">{{ city }}</bf>.</p>
-    <p class="text-center">To start riding, go to the <a href="/vehicles">Vehicles</a> page.</p>
-  {% else %}
-    <h4 class="text-center">Welcome to MovR, a vehicle-sharing experience brought to you by <img src="https://d33wubrfki0l68.cloudfront.net/e051c02e4bcafe3450898a73a08eb41549e0c173/7da1e/docs/images/cl_logo_horizontal.svg" width="150" height="150" alt="CRL" class="text-bottom"></h4>
-    <p class="text-center">To start riding, <a href="/login">log in</a> or <a href="/register">sign up</a>.</p>
-  {% endif %}
+{% if current_user.is_active %}
+<h1 class="text-center">Welcome <bf class="text-capitalize">{{ current_user.first_name }}</bf>!</h1>
+<hr>
+<p class="text-center">You are logged in and ready to ride in <bf class="text-capitalize">{{ city }}</bf>.</p>
+<p class="text-center">To start riding, go to the <a href="/vehicles">Vehicles</a> page.</p>
+{% else %}
+<h4 class="text-center">Welcome to MovR, a vehicle-sharing experience brought to you by <img
+    src="https://d33wubrfki0l68.cloudfront.net/e051c02e4bcafe3450898a73a08eb41549e0c173/7da1e/docs/images/cl_logo_horizontal.svg"
+    width="150" height="150" alt="CRL" class="text-bottom"></h4>
+<p class="text-center">To start riding, <a href="/login">log in</a> or <a href="/register">sign up</a>.</p>
+{% endif %}
 {% endif %}
 {% endblock %}
