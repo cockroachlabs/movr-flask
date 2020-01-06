@@ -1,5 +1,6 @@
 # This file contains utility functions
 
+
 def get_region(city):
     if city in ('new york', 'boston', 'washington_dc'):
         return 'gcp-us-east1'
