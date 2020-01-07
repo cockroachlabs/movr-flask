@@ -13,7 +13,7 @@ from web.geoutils import get_region
 # Initialize the app
 app = Flask(__name__)
 app.config.from_object(Config)
-bootstrap = Bootstrap(app)
+Bootstrap(app)
 login = LoginManager(app)
 protocol = ('https', 'http')[app.config.get('DEBUG') == 'True']
 
