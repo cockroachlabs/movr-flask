@@ -22,7 +22,7 @@ class User(Base, UserMixin):
         User -- Instance of the User class.
     """
     __tablename__ = 'users'
-    id = Column(UUID, default=str(uuid.uuid4()), primary_key=True)
+    id = Column(UUID, primary_key=True)
     city = Column(String, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
@@ -52,7 +52,7 @@ class Vehicle(Base):
         Vehicle -- Instance of the Vehicle class.
     """
     __tablename__ = 'vehicles'
-    id = Column(UUID, default=str(uuid.uuid4()), primary_key=True)
+    id = Column(UUID, primary_key=True)
     city = Column(String, primary_key=True)
     type = Column(String)
     owner_id = Column(UUID, ForeignKey('users.id'))
@@ -77,14 +77,14 @@ class Ride(Base):
         Ride -- Instance of the Ride class.
     """
     __tablename__ = 'rides'
-    id = Column(UUID, default=str(uuid.uuid4()), primary_key=True)
+    id = Column(UUID, primary_key=True)
     city = Column(String, ForeignKey('vehicles.city'), primary_key=True)
     rider_id = Column(UUID, ForeignKey('users.id'))
     rider_city = Column(String, ForeignKey('users.city'))
     vehicle_id = Column(UUID, ForeignKey('vehicles.id'))
     start_location = Column(String)
     end_location = Column(String)
-    start_time = Column(DateTime, default=datetime.datetime.now)
+    start_time = Column(DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     end_time = Column(DateTime)
     length = Column(Interval)
 

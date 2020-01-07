@@ -38,7 +38,7 @@ def end_ride_txn(session, city, ride_id, location):
     v = session.query(Vehicle).filter(Vehicle.city == city,
                                       Vehicle.id == r.vehicle_id).first()
     r.end_location = location
-    r.end_time = datetime.datetime.now()
+    r.end_time = datetime.datetime.now(datetime.timezone.utc)
     r.length = r.end_time - r.start_time
     v.last_location = location
     v.status = "available"
