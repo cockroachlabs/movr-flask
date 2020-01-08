@@ -18,7 +18,7 @@ def start_ride_txn(session, city, rider_id, rider_city, vehicle_id):
     v = session.query(Vehicle).filter(Vehicle.city == city,
                                       Vehicle.id == vehicle_id).first()
     r = Ride(city=city, id=str(uuid.uuid4()), rider_id=rider_id,
-             rider_city=rider_city, vehicle_id=vehicle_id, start_location=v.last_location)
+             rider_city=rider_city, vehicle_id=vehicle_id, start_location=v.last_location, start_time=datetime.datetime.now(datetime.timezone.utc))
     session.add(r)
     v.status = "unavailable"
 

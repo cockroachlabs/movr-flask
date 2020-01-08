@@ -2,7 +2,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Index, String, DateTime, Integer, Boolean, Float, Interval, ForeignKey, CheckConstraint
 from sqlalchemy.types import DECIMAL, DATE
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-import uuid
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -84,7 +83,7 @@ class Ride(Base):
     vehicle_id = Column(UUID, ForeignKey('vehicles.id'))
     start_location = Column(String)
     end_location = Column(String)
-    start_time = Column(DateTime, default=datetime.datetime.now(datetime.timezone.utc))
+    start_time = Column(DateTime)
     end_time = Column(DateTime)
     length = Column(Interval)
 
