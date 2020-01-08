@@ -10,26 +10,16 @@ registry.register(
 class MovR:
     """
     Wraps the database connection. The class methods wrap database transactions.
-    The `__enter__` and `__exit__` magic methods allow the connection to be opened and closed using `with` statements.
     """
 
     def __init__(self, conn_string):
         """
-        Establish a connection to the database, creating an .Engine instance and a .Session instance.
+        Establish a connection to the database, creating an Engine instance.
 
         Arguments:
             conn_string {String} -- CockroachDB connection string.
         """
         self.engine = create_engine(conn_string, convert_unicode=True)
-        self.session = sessionmaker(bind=self.engine)()
-
-    def __enter__(self):
-        """ Open new connection to database, creating new Engine and Session objects. """
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """ Close the connection session. """
-        self.session.close()
 
     def start_ride(self, city, rider_id, rider_city, vehicle_id):
         """
