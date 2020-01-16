@@ -3,12 +3,11 @@ from flask import Flask, __version__, render_template, session, redirect, flash,
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
-from sqlalchemy import create_engine
-from sqlalchemy.exc import DBAPIError
 from movr.movr import MovR
 from web.forms import CredentialForm, RegisterForm, VehicleForm, StartRideForm, EndRideForm, RemoveUserForm, RemoveVehicleForm
 from web.config import Config
 from web.geoutils import get_region
+from sqlalchemy.exc import DBAPIError
 
 # Initialize the app
 app = Flask(__name__)
