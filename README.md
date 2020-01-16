@@ -2,25 +2,39 @@
 
 ## Overview
 
-MovR is a fictional vehicle-sharing company. 
+This repo contains the source code for an example implementation of a multi-region application for the fictional vehicle-sharing company [MovR](https://www.cockroachlabs.com/docs/dev/movr.html).
 
-This repo contains the source code for the MovR application, which is comprised of the following:
+The application stack consists of the following components:
 
-- A SQLAlchemy mapping of the [MovR database](https://www.cockroachlabs.com/docs/dev/movr.html)
-- A REST API to the MovR database mapping
-- A web server that hosts an interactive web UI for MovR
+- A multi-node, geo-distributed CockroachDB cluster, with each node's locality corresponding to cloud provider regions.
+- A geo-partitioned database schema that defines the tables and indexes for user, vehicle, and ride data.
+- Python class definitions that map to the tables in our database.
+- A backend API that defines the application's connection to the database and the database transactions.
+- A Flask server that handles requests from client web browsers.
+- HTML files that define web pages that the Flask server renders.
 
-For more information about MovR, see the [MovR webpage](https://www.cockroachlabs.com/docs/dev/movr.html).
+**Note:** A detailed tutorial on multi-region application development and deployment is coming soon to the [Cockroach Labs documentation site](https://www.cockroachlabs.com/docs/stable/)! That tutorial will reference the source code in this repo.
 
-## Debugging
+## Requirements
 
-### Database set-up
+Make sure that you have installed the following on your local machine:
 
-In production, you want to start a secure CockroachDB cluster, with nodes on machines located in different areas of the world. For debugging purposes, you can just use the [`cockroach demo`](cockroach-demo.html) command. This command starts up an insecure, virtual nine-node cluster.
+- [CockroachDB](https://www.cockroachlabs.com/docs/stable/install-cockroachdb-mac.html/install-cockroachdb-mac.html)
+- [Python 3](https://www.python.org/downloads/)
+- [`pipenv`](https://docs.pipenv.org/en/latest/install/#installing-pipenv) (for debugging)
+- [Google Cloud SDK](https://cloud.google.com/sdk/install) (for production deployments)
+- [Docker](https://docs.docker.com/v17.12/docker-for-mac/install/) (for production deployments)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (for production deployments)
 
-1. If you haven't already, download [CockroachDB](https://www.cockroachlabs.com/docs/stable/install-cockroachdb-mac.html).
+There are a number of Python libraries that you also need to run the application, including `flask`, `sqlalchemy`, and `cockroachdb`. Rather than downloading these dependencies directly from PyPi to your machine, you should list them in dependency configuration files (see [Local Deployment](#local-deployment) and [Multi-region deployment](#multi-region-deployment) for examples).
 
-1. Run `cockroach demo`, with the `--nodes` and `--demo-locality` flags. The database schema provided in this repo assumes the GCP region names. 
+## Local Deployment
+
+### Database setup
+
+In production, you want to start a secure CockroachDB cluster, with nodes on machines located in different areas of the world. For debugging purposes, you can just use the [`cockroach demo`](https://www.cockroachlabs.com/docs/stable/cockroach-demo.html) command. This command starts up an insecure, virtual nine-node cluster.
+
+1. Run `cockroach demo`, with the `--nodes` and `--demo-locality` flags. The database schema provided in this repo assumes the [GCP region names](https://cloud.google.com/about/locations/). 
 
     ~~~ shell
     $ cockroach demo \
@@ -36,20 +50,48 @@ In production, you want to start a secure CockroachDB cluster, with nodes on mac
 
 1. Copy the connection string at the prompt (e.g., `root@127.0.0.1:<some_port>/movr`). 
 
-1. In a separate terminal window, run the following command to load `dbinit.sql` to the demo database:
+1. In a separate terminal window, run the following command to load `dbinit.sql` (located at the top level of the repo) to the demo database:
 
     ~~~ shell
     $ cockroach sql --insecure --url='postgresql://root@127.0.0.1:<some_port>/movr' < dbinit.sql
     ~~~
 
-### Application set-up
+### Application setup
 
-In production, you probably want to containerize your application and deploy it with k8s. For debugging, use [`pipenv`](https://pypi.org/project/pipenv/), a tool that manages dependencies with `pip` and creates virtual environments with `virtualenv`.
+In production, you probably want to containerize your application and deploy it with k8s. For debugging, use [`pipenv`](https://pypi.org/project/pipenv/), a tool that includes `pip` (to make dependencies) and `virtualenv` (to create virtual environments).
 
 1. Run the following command to initialize the project's virtual environment:
 
     ~~~ shell
     $ pipenv --three
+    ~~~
+
+    `pipenv` creates a `Pipfile` in the current directory. Open this `Pipfile`, and confirm its contents match the following:
+
+    ~~~ toml
+    [[source]]
+    name = "pypi"
+    url = "https://pypi.org/simple"
+    verify_ssl = true
+
+    [dev-packages]
+
+    [packages]
+    cockroachdb = "*"
+    psycopg2-binary = "*"
+    SQLAlchemy = "*"
+    SQLAlchemy-Utils = "*"
+    Flask = "*"
+    Flask-SQLAlchemy = "*"
+    Flask-WTF = "*"
+    Flask-Bootstrap = "*"
+    Flask-Login = "*"
+    WTForms = "*"
+    gunicorn = "*"
+    geopy = "*"
+
+    [requires]
+    python_version = "3.7"
     ~~~
 
 1. Run the following command to install the packages listed in the `Pipfile`:
@@ -58,17 +100,17 @@ In production, you probably want to containerize your application and deploy it 
     $ pipenv install
     ~~~
 
-1. Pipenv automatically sets any variables defined in a `.env` file as environment variables in a Pipenv virtual environment. To connect to a SQL database (including CockroachDB!) from a client, you need a [SQL connection string](https://en.wikipedia.org/wiki/Connection_string). 
+1. To connect to a SQL database (like CockroachDB) from a client, you need a [SQL connection string](https://en.wikipedia.org/wiki/Connection_string). Rather than hard-coding the connection string into the source code, the application reads it from an environment variable. Pipenv automatically sets any variables defined in a `.env` file as environment variables in a Pipenv virtual environment. 
 
-    So, create a file named `.env`, and then define the connection string in that file as the `DB_URI` environment variable. Note that for SQLAlchemy, the connection string protocol needs to be specific to the CockroachDB dialect.
+    So, open `.env`, and edit the `DB_URI` environment variable so that it matches the connection string for the demo cluster that you started earlier (you should just need to change the `<port>`). Note that SQLAlchemy requires the connection string protocol to be specific to the CockroachDB dialect.
 
     For example:
 
     ~~~
     DB_URI = 'cockroachdb://root@127.0.0.1:52382/movr'
     ~~~
-
-    You can also specify a Google Maps API key here, but you might need to create a new key and restrict that key to your local IP address.
+    
+    You can also specify other variables in this file that you'd rather not hard-code in the application, like API keys and secret keys used by the application. For debugging purposes, you should leave these variables as they are.
 
 1. Activate the virtual environment:
 
@@ -76,7 +118,7 @@ In production, you probably want to containerize your application and deploy it 
     $ pipenv shell
     ~~~
 
-    The prompt should now read `~bash-3.2$`. From this shell, you can run any Python3 application with the required dependencies that you listed in the `Pipfile` and the environment variables that you listed in the `.env` file. You can exit the shell subprocess at any time with a simple `exit` command.
+    The prompt should now read `~bash-3.2$`. From this shell, you can run any Python3 application with the required dependencies that you listed in the `Pipfile`, and the environment variables that you listed in the `.env` file. You can exit the shell subprocess at any time with a simple `exit` command.
 
 1. To test out the application, you can simply run the server file:
 
@@ -84,7 +126,7 @@ In production, you probably want to containerize your application and deploy it 
     $ python3 server.py
     ~~~
 
-    You can alternatively use [gunicorn](https://gunicorn.org/) for the server.
+    You can alternatively use [gunicorn](https://gunicorn.org/).
 
     ~~~ shell
     $ gunicorn -b localhost:8000 server:app
@@ -92,25 +134,48 @@ In production, you probably want to containerize your application and deploy it 
 
 1. Navigate to the URL provided to test out the application.
 
-## Multi-region Deployment
+### Clean up
 
-### Database Deployment (Cockroach Cloud)
+1. To shut down the demo cluster, just `Ctrl+C` out of the process.
 
-To deploy CockroachDB in multiple regions, we recommend that you use [Cockroach Cloud](https://cockroachlabs.cloud):
+    **Note:** Shutting down a demo cluster erases all data in the database.
 
-1. Create a multi-region CockroachCloud cluster, with GCP, in regions us-west1, us-east1, europe-west1.
+1. To shut down the application, `Ctrl+C` out of the Python process, and then run `exit` to exit the virtual environment.
 
-1. After you create the CC cluster, select **Connect**, and create a user and network. In this example, we just make the connection public. See https://www.cockroachlabs.com/docs/cockroachcloud/stable/cockroachcloud-connect-to-your-cluster.html for instructions.
+## Multi-Region Deployment
 
-1. After you create the user and password, copy the connection strings for each region, with the user and password specified. 
+### Database deployment (CockroachCloud)
+
+In production, you want to start a secure CockroachDB cluster, with nodes on machines located in different areas of the world. 
+
+To deploy CockroachDB in multiple regions, using [CockroachCloud](https://www.cockroachlabs.com/docs/cockroachcloud/stable/):
+
+1. Create a CockroachCloud account at [https://cockroachlabs.cloud](https://cockroachlabs.cloud).
+
+1. Request a multi-region CockroachCloud cluster on GCP, in regions `us-west1`, `us-east1`, and `europe-west1`.
+
+1. After the cluster is created, open the console, and select the cluster.
+
+1. Select **SQL Users** from the side panel, select **Add user**, give the user a name and a password, and then add the user. You can use any user name except "root".
+
+1. Select **Networking** from the side panel, and then select **Add network**. Give the network any name you'd like, select either a **New network** or a **Public network**, check both **UI** and **SQL**, and then add the network. In this example, we use a public network.
+
+1. Select **Connect** at the top-right corner of the cluster console.
+
+1. Select the **User** that you created, and then **Continue**.
+
+1. Copy the connection string, with the user and password specified.
+
+1. **Go back**, and retrieve the connection strings for the other two regions.
 
 1. Download the cluster cert to your local machine (it's the same for all regions).
 
-1. Open a separate terminal and run the `dbinit.sql` file on the running cluster to initialize the database. You can connect to the databse from any node on the cluster.
+1. Open a new terminal, and run the `dbinit.sql` file on the running cluster to initialize the database. You can connect to the database from any node on the cluster for this step.
 
     ~~~ shell
     $ cockroach sql --url any-connection-string < dbinit.sql
     ~~~
+
 
     **Note:** You need to specify the password in the connection string!
 
@@ -119,19 +184,24 @@ To deploy CockroachDB in multiple regions, we recommend that you use [Cockroach 
     $ cockroach sql --url \ 'postgresql://user:password@region.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=certs-dir/movr-app-ca.crt' < dbinit.sql
     ~~~
 
-**Note:** You can also deploy CRDB manually. For instructions, see the [Manual Deployment](manual-deployment.html) page of the Cockroach Labs documentation site.
 
-### Application Deployment
+**Note:** You can also deploy CRDB manually. For instructions, see the [Manual Deployment](https://www.cockroachlabs.com/docs/stable/manual-deployment.html) page of the Cockroach Labs documentation site.
 
-To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service and a Kubernetes engine. For our deployment, we use GCP. To serve a secure web application, you also need a public domain name!
+### Application deployment
+
+To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service and a Kubernetes engine. For our deployment, we use GCP. 
+
+**Note:** To serve a secure web application that takes HTTPS requests, you also need a public domain name! SSL certificates are not assigned to IP addresses.
 
 1. If you don't have a glcoud account, create one at https://cloud.google.com/.
 
 1. Create a gcloud project on the [GCP console](https://console.cloud.google.com/).
 
-1. Enable the [Google Maps Embed API](https://console.cloud.google.com/apis/library), create an API key, restrict the API key to all subdomains of your domain name (e.g. `https://site.com/*`), and retrieve the API key.
+1. **Optional:** Enable the [Google Maps Embed API](https://console.cloud.google.com/apis/library), create an API key, restrict the API key to all subdomains of your domain name (e.g. `https://site.com/*`), and retrieve the API key. 
 
-1. Configure/authorize the gcloud CLI to use your project and region.
+    **Note:** The example HTML templates include maps. Not providing an API key to the application will not break the application.
+
+1. Configure/authorize the `gcloud` CLI to use your project and region.
 
     ~~~ shell
     $ gcloud init
@@ -139,13 +209,13 @@ To deploy the application globally, we recommend that you use a major cloud prov
     $ gcloud auth application-default login
     ~~~
 
-1. If you haven't already, install kubectl.
+1. If you haven't already, install `kubectl`.
 
     ~~~ shell
     $ gcloud components install kubectl
     ~~~
 
-1. Build and run the docker image locally.
+1. Build and run the Docker image locally.
 
     ~~~ shell
     $ docker build -t gcr.io/<gcp_project>/movr-app:v1 .
@@ -171,7 +241,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
       gcloud container clusters create movr-europe-west
     ~~~
 
-1. Add the container credentials to kubeconfig.
+1. Add the container credentials to `kubeconfig`.
 
     ~~~ shell
     $ KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=us-east1-b movr-us-east
@@ -179,7 +249,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
     $ KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=europe-west1-b movr-europe-west
     ~~~
 
-1. For each cluster context, create a secret for the connection string, Google Maps API, and the certs, and then create the k8s deployment and service using the `movr.yaml` manifest file. To get the context for the cluser, run `kubectl config get-contexts -o name`.
+1. For each cluster context, create a secret for the connection string, Google Maps API (optional), and the certs, and then create the k8s deployment and service using the `movr.yaml` manifest file. To get the context for the cluster, run `kubectl config get-contexts -o name`.
 
     ~~~ shell
     $ kubectl config use-context <context-name> && \ 
@@ -189,21 +259,21 @@ To deploy the application globally, we recommend that you use a major cloud prov
     kubectl create -f ~/movr-flask/movr.yaml
     ~~~
 
-    (Do this for each cluster context!)
+    **Note:** You need to do this for each cluster context!
 
-1. Reserve s static IP address for the ingress.
+1. Reserve a static IP address for the ingress.
 
     ~~~ shell
     $ gcloud compute addresses create --global movr-ip
     ~~~
 
-1. Download [kubemci](https://github.com/GoogleCloudPlatform/k8s-multicluster-ingress) and make it executable.
+1. Download [`kubemci`](https://github.com/GoogleCloudPlatform/k8s-multicluster-ingress), and then make it executable.
 
     ~~~ shell
     $ chmod +x ~/kubemci
     ~~~
 
-1. Use kubemci to make the ingress.
+1. Use `kubemci` to make the ingress.
 
     ~~~ shell
     $ ~/kubemci create movr-mci \
@@ -212,19 +282,19 @@ To deploy the application globally, we recommend that you use a major cloud prov
     --kubeconfig=<path>/mcikubeconfig
     ~~~
 
-    **Note:** kubemci requires full paths.
+    **Note:** `kubemci` requires full paths.
 
-1. In GCP's "Load balancing" console (found under "Network Services"), select and edit the load balancer that you just created. 
+1. In GCP's **Load balancing** console (found under **Network Services**), select and edit the load balancer that you just created. 
 
     1. Edit the backend configuration. 
-        - Expand the advanced configurations, and add a custom header: `X-City: {client_city}`. This forwards an additional header to the application telling it what city the client is in. The header name (`X-City`) is hardcoded into the example application. 
+        - Expand the advanced configurations, and add [a custom header](https://cloud.google.com/load-balancing/docs/user-defined-request-headers): `X-City: {client_city}`. This forwards an additional header to the application telling it what city the client is in. The header name (`X-City`) is hardcoded into the example application. 
 
     1. Edit the frontend configuration, and add a new frontend.
-        - Under "Protocol", select HTTPS.
-        - Under "IP address", select the static IP address that you reserved earlier (e.g., "movr-ip").
-        - Under "Certificate", select "Create a new certificate".
-        - In the "Create a new certificate" page, give a name to the certificate (e.g., "movr-ssl-cert"). Check "Create Google-managed certificate", and then under "Domains", enter a domain name that you own and want to use for your application.
-    1. Review and finalize the load balancer, and then "Update".
+        - Under "**Protocol**", select HTTPS.
+        - Under "**IP address**", select the static IP address that you reserved earlier (e.g., "`movr-ip`").
+        - Under "**Certificate**", select "**Create a new certificate**".
+        - On the "**Create a new certificate**" page, give a name to the certificate (e.g., "`movr-ssl-cert`"), check "**Create Google-managed certificate**", and then under "Domains", enter a domain name that you own and want to use for your application.
+    1. Review and finalize the load balancer, and then "**Update**".
 
     **Note:** It will take several minutes to provision the SSL certificate that you just created for the frontend.
 
@@ -234,11 +304,11 @@ To deploy the application globally, we recommend that you use a major cloud prov
     $ ~/kubemci list --gcp-project=<gcp_project>
     ~~~
 
-1. In the GCP Cloud DNS console (under Network Services), create a new zone. You can name the zone whatever you want, but be sure to enter the same domain name for which you created a certificate earlier.
+1. In the **Cloud DNS** console (found under **Network Services**), create a new zone. You can name the zone whatever you want. Enter the same domain name for which you created a certificate earlier.
 
-1. Select your zone, and copy the nameserver addresses (under "Data") for the recordset labeled "NS".
+1. Select your zone, and copy the nameserver addresses (under "**Data**") for the recordset labeled "**NS**".
 
-1. Add the nameserver addresses to the authorative nameserver list for your domain name, through your domain name provider.
+1. Outside of the GCP console, through your domain name provider, add the nameserver addresses to the authorative nameserver list for your domain name.
 
     **Note:** It can take up to 48 hours for changes to the authorative nameserver list to take effect.
 
