@@ -11,7 +11,7 @@ USE movr;
 
 
 CREATE TABLE IF NOT EXISTS users (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
     city STRING NOT NULL,
     first_name STRING NULL,
     last_name STRING NULL,
@@ -39,7 +39,7 @@ ALTER PARTITION us_west OF INDEX movr.public.users@primary CONFIGURE ZONE USING
 
 
 CREATE TABLE IF NOT EXISTS vehicles (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
     city STRING NOT NULL,
     type STRING NULL,
     owner_id UUID NULL,
@@ -79,7 +79,7 @@ ALTER PARTITION us_west OF INDEX movr.public.vehicles@vehicles_auto_index_fk_cit
 
 
 CREATE TABLE rides (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
     city STRING NOT NULL,
     vehicle_id UUID NULL,
     rider_id UUID NULL,
@@ -129,3 +129,12 @@ ALTER PARTITION us_west OF INDEX movr.public.rides@rides_auto_index_fk_vehicle_c
     constraints = '[+region=gcp-us-west1]'
 ;
 
+
+INSERT INTO users (id, city, first_name, last_name, email, username) VALUES 
+    ('2804df7c-d8fd-4b1c-9799-b1d44452554b', 'new york', 'Carl', 'Kimball', 'carl@cockroachlabs.com', 'carl');
+
+INSERT INTO vehicles (id, city, type, owner_id, date_added, status, last_location, color, brand) VALUES 
+    ('142b7c9e-6227-4dbb-b188-b1dac57d5521', 'new york', 'scooter', '2804df7c-d8fd-4b1c-9799-b1d44452554b', current_date(),'available', 'Time Square', 'Blue', 'Razor');
+
+INSERT INTO rides(city, rider_id, rider_city, vehicle_id, start_location, end_location, start_time, end_time, length) VALUES 
+    ('new york', '2804df7c-d8fd-4b1c-9799-b1d44452554b', 'new york', '142b7c9e-6227-4dbb-b188-b1dac57d5521', 'Cockroach Labs, 23rd Street', 'Time Square', '2020-01-16 21:20:48.224453+00:00', '2020-01-16 21:20:52.045813+00:00', '00:00:03.82136');
