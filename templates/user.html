@@ -47,7 +47,7 @@
     {% endif %}
     {% endfor %}
     {% endif %}
-    {% if not vehicles %}
+    {% if not current_user.is_owner %}
     <hr>
     <div class="text-center">
         <form class="form form-horizontal" method="POST" action="/users/remove/{{ current_user.id }}">
