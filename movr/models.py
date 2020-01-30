@@ -1,9 +1,9 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Index, String, DateTime, Integer, Boolean, Float, Interval, ForeignKey, CheckConstraint, PrimaryKeyConstraint
-from sqlalchemy.types import DECIMAL, DATE
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy import Column, String, DateTime, Boolean, Interval, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.types import DATE
+from sqlalchemy.dialects.postgresql import UUID
 import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 from flask_login import UserMixin
 
 Base = declarative_base()
@@ -11,7 +11,7 @@ Base = declarative_base()
 
 class User(Base, UserMixin):
     """
-    Represents rows of the users table. 
+    Represents rows of the users table.
 
     Arguments:
         Base {DeclaritiveMeta} -- Base class for declarative SQLAlchemy class definitions that produces appropriate `sqlalchemy.schema.Table` objects.
@@ -38,12 +38,13 @@ class User(Base, UserMixin):
         self.password_hash = generate_password_hash(password)
 
     def __repr__(self):
-        return "<User(city='{0}', id='{1}', name='{2}')>".format(self.city, self.id, self.first_name + ' ' + self.last_name)
+        return "<User(city='{0}', id='{1}', name='{2}')>".format(
+            self.city, self.id, self.first_name + ' ' + self.last_name)
 
 
 class Vehicle(Base):
     """
-    Represents rows of the vehicles table. 
+    Represents rows of the vehicles table.
 
     Arguments:
         Base {DeclaritiveMeta} -- Base class for declarative SQLAlchemy class definitions that produces appropriate `sqlalchemy.schema.Table` objects.
@@ -64,12 +65,13 @@ class Vehicle(Base):
     PrimaryKeyConstraint(city, id)
 
     def __repr__(self):
-        return "<Vehicle(city='{0}', id='{1}', type='{2}', status='{3}')>".format(self.city, self.id, self.type, self.status)
+        return "<Vehicle(city='{0}', id='{1}', type='{2}', status='{3}')>".format(
+            self.city, self.id, self.type, self.status)
 
 
 class Ride(Base):
     """
-    Represents rows of the rides table. 
+    Represents rows of the rides table.
 
     Arguments:
         Base {DeclaritiveMeta} -- Base class for declarative SQLAlchemy class definitions that produces appropriate `sqlalchemy.schema.Table` objects.
@@ -91,4 +93,5 @@ class Ride(Base):
     PrimaryKeyConstraint(city, id)
 
     def __repr__(self):
-        return "<Ride(city='{0}', id='{1}', rider_id='{2}', vehicle_id='{3}')>".format(self.city, self.id, self.rider_id, self.vehicle_id)
+        return "<Ride(city='{0}', id='{1}', rider_id='{2}', vehicle_id='{3}')>".format(
+            self.city, self.id, self.rider_id, self.vehicle_id)

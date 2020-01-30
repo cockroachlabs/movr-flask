@@ -2,7 +2,7 @@
 import os
 
 
-class Config(object):
+class Config:
     """Flask configuration class.
     """
     DEBUG = os.environ['DEBUG']

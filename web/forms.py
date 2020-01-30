@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, HiddenField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import data_required
 
 
@@ -21,15 +21,18 @@ class EndRideForm(FlaskForm):
     """End ride form class.
     """
     location = StringField(
-        label='Where are you leaving the vehicle?', validators=[data_required()])
+        label='Where are you leaving the vehicle?',
+        validators=[
+            data_required()])
     submit = SubmitField('End ride')
 
 
 class VehicleForm(FlaskForm):
     """Vehicle registration form class.
     """
-    type = SelectField(label='Type', choices=[
-                       ('bike', 'Bike'), ('scooter', 'Scooter'), ('skateboard', 'Skateboard')])
+    type = SelectField(
+        label='Type', choices=[
+            ('bike', 'Bike'), ('scooter', 'Scooter'), ('skateboard', 'Skateboard')])
     color = StringField(label='Color', validators=[data_required()])
     brand = StringField(label='Brand')
     location = StringField(label='Current location: ',
@@ -46,12 +49,33 @@ class RemoveVehicleForm(FlaskForm):
 class RegisterForm(FlaskForm):
     """User registration form class.
     """
-    city = SelectField('City: ',  choices=[('new york', 'New York'), ('boston', 'Boston'), ('washington dc', 'Washington DC'),
-                                           ('san francisco', 'San Francisco'), ('seattle',
-                                                                                'Seattle'), ('los angeles', 'Los Angeles'),
-                                           ('chicago', 'Chicago'), ('detroit',
-                                                                    'Detroit'), ('minneapolis', 'Minneapolis'),
-                                           ('amsterdam', 'Amsterdam'), ('paris', 'Paris'), ('rome', 'Rome')])
+    city = SelectField(
+        'City: ',
+        choices=[
+            ('new york',
+             'New York'),
+            ('boston',
+             'Boston'),
+            ('washington dc',
+             'Washington DC'),
+            ('san francisco',
+             'San Francisco'),
+            ('seattle',
+             'Seattle'),
+            ('los angeles',
+             'Los Angeles'),
+            ('chicago',
+             'Chicago'),
+            ('detroit',
+             'Detroit'),
+            ('minneapolis',
+             'Minneapolis'),
+            ('amsterdam',
+             'Amsterdam'),
+            ('paris',
+             'Paris'),
+            ('rome',
+             'Rome')])
     first_name = StringField('First name: ', validators=[data_required()])
     last_name = StringField('Last name: ', validators=[data_required()])
     email = StringField('Email', validators=[data_required()])

@@ -31,7 +31,10 @@ class MovR:
             rider_city {String} -- The user's city.
             vehicle_id {UUID} -- The vehicle's unique ID.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: start_ride_txn(session, city, rider_id, rider_city, vehicle_id))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: start_ride_txn(
+                session, city, rider_id, rider_city, vehicle_id))
 
     def end_ride(self, city, ride_id, location):
         """
@@ -42,7 +45,10 @@ class MovR:
             ride_id {UUID} -- The ride's unique ID.
             location {String} -- The vehicle's last location.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: end_ride_txn(session, city, ride_id, location))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: end_ride_txn(
+                session, city, ride_id, location))
 
     def add_user(self, city, first_name, last_name, email, username, password):
         """
@@ -56,7 +62,17 @@ class MovR:
             username {String} -- The user's username.
             password {String} -- The user's unhashed password.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: add_user_txn(session, city, first_name, last_name, email, username, password))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine),
+            lambda session: add_user_txn(
+                session,
+                city,
+                first_name,
+                last_name,
+                email,
+                username,
+                password))
 
     def remove_user(self, city, user_id):
         """
@@ -66,7 +82,10 @@ class MovR:
             city {String} -- The user's city.
             id {UUID} -- The user's unique ID.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: remove_user_txn(session, city, user_id))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: remove_user_txn(
+                session, city, user_id))
 
     def remove_vehicle(self, city, vehicle_id):
         """
@@ -76,9 +95,21 @@ class MovR:
             city {String} -- The vehicle's city.
             id {UUID} -- The vehicle's unique ID.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: remove_vehicle_txn(session, city, vehicle_id))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: remove_vehicle_txn(
+                session, city, vehicle_id))
 
-    def add_vehicle(self, city, owner_id, last_location, type, color, brand, status, is_owner=False):
+    def add_vehicle(
+            self,
+            city,
+            owner_id,
+            last_location,
+            type,
+            color,
+            brand,
+            status,
+            is_owner=False):
         """
         Wraps a `run_transaction` call that adds a vehicle.
 
@@ -94,7 +125,19 @@ class MovR:
         Keyword Arguments:
             is_owner {bool} -- The owner status of the user, before the vehicle is added. (default: {False})
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: add_vehicle_txn(session, city, owner_id, last_location, type, color, brand, status, is_owner))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine),
+            lambda session: add_vehicle_txn(
+                session,
+                city,
+                owner_id,
+                last_location,
+                type,
+                color,
+                brand,
+                status,
+                is_owner))
 
     def get_users(self, city):
         """
@@ -106,7 +149,10 @@ class MovR:
         Returns:
             List -- A list of dictionaries containing user data.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: get_users_txn(session, city))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: get_users_txn(
+                session, city))
 
     def get_user(self, username=None, user_id=None):
         """
@@ -119,7 +165,10 @@ class MovR:
         Returns:
             User -- A User object.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: get_user_txn(session, username, user_id))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: get_user_txn(
+                session, username, user_id))
 
     def get_vehicles(self, city):
         """
@@ -131,7 +180,10 @@ class MovR:
         Returns:
             List -- A list of dictionaries containing vehicle data.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: get_vehicles_txn(session, city))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: get_vehicles_txn(
+                session, city))
 
     def get_rides(self, rider_id):
         """
@@ -143,4 +195,7 @@ class MovR:
         Returns:
             List -- A list of dictionaries containing ride data.
         """
-        return run_transaction(sessionmaker(bind=self.engine), lambda session: get_rides_txn(session, rider_id))
+        return run_transaction(
+            sessionmaker(
+                bind=self.engine), lambda session: get_rides_txn(
+                session, rider_id))
