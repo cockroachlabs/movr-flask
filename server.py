@@ -20,10 +20,12 @@ protocol = ('https', 'http')[app.config.get('DEBUG') == 'True']
 conn_string = app.config.get('DB_URI')
 movr = MovR(conn_string)
 
+
 # Define user_loader function for LoginManager
 @login.user_loader
 def load_user(user_id):
     return movr.get_user(user_id=user_id)
+
 
 # ROUTES
 # Home page
@@ -41,17 +43,20 @@ def home_page():
             # README for more details.
         except Exception as error:
             session['city'] = 'new york'
-            flash('{0}\n Unable to retrieve client city information.\n Application is now assuming you are in New York.'.format(error))
+            flash(
+                '{0}\n Unable to retrieve client city information.\n Application is now assuming you are in New York.'
+                .format(error))
     session['region'] = get_region(session['city'])
     if session['region'] is None:
-        flash('MovR is not fully supported in {0}.\n Application is now assuming you are in New York.'.format(session['city']))
+        flash(
+            'MovR is not fully supported in {0}.\n Application is now assuming you are in New York.'
+            .format(session['city']))
         session['city'] = 'new york'
         session['region'] = 'gcp-us-east1'
     session['riding'] = None
-    return render_template(
-        'home.html',
-        available=session['region'],
-        city=session['city'])
+    return render_template('home.html',
+                           available=session['region'],
+                           city=session['city'])
 
 
 # Login page
@@ -67,34 +72,26 @@ def login_page():
                 if user is None or not check_password_hash(
                         user.password_hash, form.password.data):
                     flash(
-                        Markup('Invalid user credentials.<br>If you aren\'t registered with MovR, go <a href="{0}">Sign Up</a>!').format(
-                            url_for(
-                                'register',
-                                _external=True,
-                                _scheme=protocol)))
+                        Markup(
+                            'Invalid user credentials.<br>If you aren\'t registered with MovR, go <a href="{0}">Sign Up</a>!'
+                        ).format(
+                            url_for('register',
+                                    _external=True,
+                                    _scheme=protocol)))
                     return redirect(
-                        url_for(
-                            'login_page',
-                            _external=True,
-                            _scheme=protocol))
+                        url_for('login_page', _external=True,
+                                _scheme=protocol))
                 login_user(user)
                 return redirect(
-                    url_for(
-                        'home_page',
-                        _external=True,
-                        _scheme=protocol))
+                    url_for('home_page', _external=True, _scheme=protocol))
             except Exception as error:
                 flash('{0}'.format(error))
                 return redirect(
-                    url_for(
-                        'login_page',
-                        _external=True,
-                        _scheme=protocol))
-        return render_template(
-            'login.html',
-            title='Log In',
-            form=form,
-            available=session['region'])
+                    url_for('login_page', _external=True, _scheme=protocol))
+        return render_template('login.html',
+                               title='Log In',
+                               form=form,
+                               available=session['region'])
 
 
 # Logout route
@@ -111,48 +108,37 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return render_template(
-            'register.html',
-            title='Sign Up',
-            available=session['region'])
+        return render_template('register.html',
+                               title='Sign Up',
+                               available=session['region'])
     else:
         form = RegisterForm()
         if form.validate_on_submit():
             try:
-                movr.add_user(
-                    city=form.city.data,
-                    first_name=form.first_name.data,
-                    last_name=form.last_name.data,
-                    email=form.email.data,
-                    username=form.username.data,
-                    password=form.password.data)
-                flash(
-                    'Registration successful! You can now log in as {0}.'.format(form.username.data))
+                movr.add_user(city=form.city.data,
+                              first_name=form.first_name.data,
+                              last_name=form.last_name.data,
+                              email=form.email.data,
+                              username=form.username.data,
+                              password=form.password.data)
+                flash('Registration successful! You can now log in as {0}.'.
+                      format(form.username.data))
                 return redirect(
-                    url_for(
-                        'login_page',
-                        _external=True,
-                        _scheme=protocol))
+                    url_for('login_page', _external=True, _scheme=protocol))
             except DBAPIError as sql_error:
                 flash(
-                    '{0}\n Registration failed. Make sure that you choose a unique username!'.format(sql_error))
+                    '{0}\n Registration failed. Make sure that you choose a unique username!'
+                    .format(sql_error))
                 return redirect(
-                    url_for(
-                        'register',
-                        _external=True,
-                        _scheme=protocol))
+                    url_for('register', _external=True, _scheme=protocol))
             except Exception as error:
                 flash('{0}'.format(error))
                 return redirect(
-                    url_for(
-                        'register',
-                        _external=True,
-                        _scheme=protocol))
-        return render_template(
-            'register.html',
-            title='Sign Up',
-            form=form,
-            available=session['region'])
+                    url_for('register', _external=True, _scheme=protocol))
+        return render_template('register.html',
+                               title='Sign Up',
+                               form=form,
+                               available=session['region'])
 
 
 # Users page
@@ -161,14 +147,14 @@ def register():
 def users():
     if current_user.is_authenticated:
         users = movr.get_users(session['city'])
-        return render_template(
-            'users.html',
-            title='Users',
-            users=users,
-            available=session['region'])
+        return render_template('users.html',
+                               title='Users',
+                               users=users,
+                               available=session['region'])
     else:
         flash('You need to log in to see active users in your city!')
-        return redirect(url_for('login_page', _external=True, _scheme=protocol))
+        return redirect(url_for('login_page', _external=True,
+                                _scheme=protocol))
 
 
 # User page
@@ -179,19 +165,18 @@ def user(user_id):
     form_u = RemoveUserForm()
     form_v = RemoveVehicleForm()
     if current_user.is_authenticated and user_id == current_user.id:
-        return render_template(
-            'user.html',
-            title='{0} {1}'.format(
-                current_user.first_name,
-                current_user.last_name),
-            form_u=form_u,
-            form_v=form_v,
-            vehicles=v,
-            available=session['region'],
-            API_KEY=app.config.get('API_KEY'))
+        return render_template('user.html',
+                               title='{0} {1}'.format(current_user.first_name,
+                                                      current_user.last_name),
+                               form_u=form_u,
+                               form_v=form_v,
+                               vehicles=v,
+                               available=session['region'],
+                               API_KEY=app.config.get('API_KEY'))
     else:
         flash('You need to log in to see your profile!')
-        return redirect(url_for('login_page', _external=True, _scheme=protocol))
+        return redirect(url_for('login_page', _external=True,
+                                _scheme=protocol))
 
 
 # Remove user route
@@ -211,13 +196,12 @@ def remove_user(user_id):
 def vehicles():
     form = StartRideForm()
     vehicles = movr.get_vehicles(session['city'])
-    return render_template(
-        'vehicles.html',
-        title='Vehicles',
-        vehicles=vehicles,
-        form=form,
-        available=session['region'],
-        API_KEY=app.config.get('API_KEY'))
+    return render_template('vehicles.html',
+                           title='Vehicles',
+                           vehicles=vehicles,
+                           form=form,
+                           available=session['region'],
+                           API_KEY=app.config.get('API_KEY'))
 
 
 # Add vehicles route
@@ -227,33 +211,25 @@ def add_vehicle():
     form = VehicleForm()
     if form.validate_on_submit():
         try:
-            movr.add_vehicle(
-                city=current_user.city,
-                owner_id=current_user.id,
-                last_location=form.location.data,
-                type=form.type.data,
-                color=form.color.data,
-                brand=form.brand.data,
-                status='available',
-                is_owner=current_user.is_owner)
+            movr.add_vehicle(city=current_user.city,
+                             owner_id=current_user.id,
+                             last_location=form.location.data,
+                             type=form.type.data,
+                             color=form.color.data,
+                             brand=form.brand.data,
+                             status='available',
+                             is_owner=current_user.is_owner)
             flash('Vehicle added!')
             return redirect(
-                url_for(
-                    'vehicles',
-                    _external=True,
-                    _scheme=protocol))
+                url_for('vehicles', _external=True, _scheme=protocol))
         except Exception as error:
             flash('{0}'.format(error))
             return redirect(
-                url_for(
-                    'vehicles',
-                    _external=True,
-                    _scheme=protocol))
-    return render_template(
-        'vehicles-add.html',
-        title='Add a vehicle',
-        form=form,
-        available=session['region'])
+                url_for('vehicles', _external=True, _scheme=protocol))
+    return render_template('vehicles-add.html',
+                           title='Add a vehicle',
+                           form=form,
+                           available=session['region'])
 
 
 # Remove vehicle route
@@ -262,14 +238,9 @@ def add_vehicle():
 def remove_vehicle(vehicle_id):
     movr.remove_vehicle(city=current_user.city, vehicle_id=vehicle_id)
     flash('You have successfully removed a vehicle.')
-    return redirect(
-        '{0}{1}{2}'.format(
-            url_for(
-                'users',
-                _external=True,
-                _scheme=protocol),
-            '/',
-            current_user.id))
+    return redirect('{0}{1}{2}'.format(
+        url_for('users', _external=True, _scheme=protocol), '/',
+        current_user.id))
 
 
 # Rides page
@@ -283,13 +254,12 @@ def rides():
             if ride['end_time'] is None:
                 session['riding'] = True
                 pass
-    return render_template(
-        'rides.html',
-        title='Rides',
-        rides=reversed(rides),
-        form=form,
-        riding=session['riding'],
-        available=session['region'])
+    return render_template('rides.html',
+                           title='Rides',
+                           rides=reversed(rides),
+                           form=form,
+                           riding=session['riding'],
+                           available=session['region'])
 
 
 # Start ride route
@@ -299,7 +269,8 @@ def start_ride(vehicle_id):
     try:
         if session['riding']:
             flash(
-                'You are already riding. End your current ride before starting a new one!')
+                'You are already riding. End your current ride before starting a new one!'
+            )
             return redirect(url_for('rides', _external=True, _scheme=protocol))
         else:
             rides = movr.get_rides(rider_id=current_user.id)
@@ -307,8 +278,10 @@ def start_ride(vehicle_id):
                 if r['end_time'] is None:
                     session['riding'] = True
                     pass
-        movr.start_ride(city=session['city'], rider_id=current_user.id,
-                        rider_city=current_user.city, vehicle_id=vehicle_id)
+        movr.start_ride(city=session['city'],
+                        rider_id=current_user.id,
+                        rider_city=current_user.city,
+                        vehicle_id=vehicle_id)
         session['riding'] = True
         flash('Ride started.')
         return redirect(url_for('rides', _external=True, _scheme=protocol))
@@ -324,7 +297,8 @@ def end_ride(ride_id):
     try:
         form = EndRideForm()
         movr.end_ride(city=session['city'],
-                      ride_id=ride_id, location=form.location.data)
+                      ride_id=ride_id,
+                      location=form.location.data)
         session['riding'] = False
         flash('Ride ended.')
         return redirect(url_for('rides', _external=True, _scheme=protocol))
