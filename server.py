@@ -41,11 +41,12 @@ def home_page():
             # README for more details.
         except Exception as error:
             session['city'] = 'new york'
-            flash(
-                '{0} {1}'.format(
-                    error,
-                    '\nUnable to retrieve client city information.\n Application is now assuming you are in New York.'))
+            flash('{0}\n Unable to retrieve client city information.\n Application is now assuming you are in New York.'.format(error))
     session['region'] = get_region(session['city'])
+    if session['region'] is None:
+        flash('MovR is not fully supported in {0}.\n Application is now assuming you are in New York.'.format(session['city']))
+        session['city'] = 'new york'
+        session['region'] = 'gcp-us-east1'
     session['riding'] = None
     return render_template(
         'home.html',
@@ -126,8 +127,7 @@ def register():
                     username=form.username.data,
                     password=form.password.data)
                 flash(
-                    'Registration successful! You can now log in as {0}.'.format(
-                        form.username.data))
+                    'Registration successful! You can now log in as {0}.'.format(form.username.data))
                 return redirect(
                     url_for(
                         'login_page',
@@ -135,9 +135,7 @@ def register():
                         _scheme=protocol))
             except DBAPIError as sql_error:
                 flash(
-                    '{0} {1}'.format(
-                        sql_error,
-                        '\nRegistration failed. Make sure that you choose a unique username!'))
+                    '{0}\n Registration failed. Make sure that you choose a unique username!'.format(sql_error))
                 return redirect(
                     url_for(
                         'register',
