@@ -55,7 +55,7 @@ def home_page():
 
 # Login page
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def login_page():
     if current_user.is_authenticated:
         return redirect(url_for('home_page', _external=True, _scheme=protocol))
     else:
@@ -73,7 +73,7 @@ def login():
                                 _scheme=protocol)))
                     return redirect(
                         url_for(
-                            'login',
+                            'login_page',
                             _external=True,
                             _scheme=protocol))
                 login_user(user)
@@ -86,7 +86,7 @@ def login():
                 flash('{0}'.format(error))
                 return redirect(
                     url_for(
-                        'login',
+                        'login_page',
                         _external=True,
                         _scheme=protocol))
         return render_template(
@@ -103,7 +103,7 @@ def logout():
     logout_user()
     session['riding'] = None
     flash('You have successfully logged out.')
-    return redirect(url_for('login', _external=True, _scheme=protocol))
+    return redirect(url_for('login_page', _external=True, _scheme=protocol))
 
 
 # Registration page
@@ -130,7 +130,7 @@ def register():
                         form.username.data))
                 return redirect(
                     url_for(
-                        'login',
+                        'login_page',
                         _external=True,
                         _scheme=protocol))
             except DBAPIError as sql_error:
@@ -170,7 +170,7 @@ def users():
             available=session['region'])
     else:
         flash('You need to log in to see active users in your city!')
-        return redirect(url_for('login', _external=True, _scheme=protocol))
+        return redirect(url_for('login_page', _external=True, _scheme=protocol))
 
 
 # User page
@@ -178,7 +178,6 @@ def users():
 @app.route('/users/<user_id>', methods=['GET'])
 def user(user_id):
     v = movr.get_vehicles(city=current_user.city)
-    r = movr.get_rides(rider_id=current_user.id)
     form_u = RemoveUserForm()
     form_v = RemoveVehicleForm()
     if current_user.is_authenticated and user_id == current_user.id:
@@ -194,7 +193,7 @@ def user(user_id):
             API_KEY=app.config.get('API_KEY'))
     else:
         flash('You need to log in to see your profile!')
-        return redirect(url_for('login', _external=True, _scheme=protocol))
+        return redirect(url_for('login_page', _external=True, _scheme=protocol))
 
 
 # Remove user route
