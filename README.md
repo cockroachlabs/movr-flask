@@ -26,7 +26,7 @@ Make sure that you have installed the following on your local machine:
 - [Docker](https://docs.docker.com/v17.12/docker-for-mac/install/) (for production deployments)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (for production deployments)
 
-There are a number of Python libraries that you also need to run the application, including `flask`, `sqlalchemy`, and `cockroachdb`. Rather than downloading these dependencies directly from PyPi to your machine, you should list them in dependency configuration files (see [Local Deployment](#local-deployment) and [Multi-region deployment](#multi-region-deployment) for examples).
+There are a number of Python libraries that you also need to run the application, including `flask`, `sqlalchemy`, and `sqlalchemy-cockroachdb`. Rather than downloading these dependencies directly from PyPi to your machine, you should list them in dependency configuration files (see [Local Deployment](#local-deployment) and [Multi-region deployment](#multi-region-deployment) for examples).
 
 ## Local Deployment
 
@@ -77,7 +77,7 @@ In production, you probably want to containerize your application and deploy it 
     [dev-packages]
 
     [packages]
-    cockroachdb = "*"
+    sqlalchemy-cockroachdb = "*"
     psycopg2-binary = "*"
     SQLAlchemy = "*"
     SQLAlchemy-Utils = "*"
