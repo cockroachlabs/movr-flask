@@ -13,7 +13,7 @@ The application stack consists of the following components:
 - A Flask server that handles requests from client web browsers.
 - HTML files that define web pages that the Flask server renders.
 
-**Note:** A detailed tutorial on multi-region application development and deployment is coming soon to the [Cockroach Labs documentation site](https://www.cockroachlabs.com/docs/stable/)! That tutorial will reference the source code in this repo.
+For a detailed tutorial on multi-region application development and deployment for this repo, see [Develop and Deploy a Multi-Region Web Application](https://www.cockroachlabs.com/docs/stable/multi-region-overview.html) on the Cockroach Labs documentation site.
 
 ## Requirements
 
@@ -287,7 +287,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
 1. In GCP's **Load balancing** console (found under **Network Services**), select and edit the load balancer that you just created. 
 
     1. Edit the backend configuration. 
-        - Expand the advanced configurations, and add [a custom header](https://cloud.google.com/load-balancing/docs/user-defined-request-headers): `X-City: {client_city}`. This forwards an additional header to the application telling it what city the client is in. The header name (`X-City`) is hardcoded into the example application. 
+        - Expand the advanced configurations, and add [a custom header](https://cloud.google.com/load-balancing/docs/user-defined-request-headers): `X-PLACE: {client_city, client_latlong}`. This forwards an additional header to the application telling it what city the client is in, and at what latitude and longitude the client is located. The header name (`X-PLACE`) is hardcoded into the example application. 
 
     1. Edit the frontend configuration, and add a new frontend.
         - Under "**Protocol**", select HTTPS.

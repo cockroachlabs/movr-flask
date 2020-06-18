@@ -34,28 +34,28 @@ def load_user(user_id):
 def home_page():
     if app.config.get('DEBUG') == 'True':
         session['city'] = 'new york'
+        session['region'] = 'gcp-us-east1'
+        flash(
+            'Application is in DEBUG mode. Currently using New York as city and gcp-us-east1 as region.')
     else:
         try:
-            session['city'] = request.headers.get("X-City").lower()
+            place = request.headers.get("X-PLACE").split(",", 1)
             # This header attribute is passed by the HTTP load balancer, to its
             # configured backend. The header must be configured manually in the
             # cloud service provider's console to include this attribute. See
             # README for more details.
+            session['city'] = place[0].lower()
+            session['latlong'] = place[1]
+            session['region'] = get_region(session['city'], session['latlong'])
         except Exception as error:
             session['city'] = 'new york'
+            session['region'] = 'gcp-us-east1'
             flash(
-                '{0}\n Unable to retrieve client city information.\n Application is now assuming you are in New York.'
+                '{0}\n Unable to retrieve client location information.\n Application is now assuming you are in New York.'
                 .format(error))
-    session['region'] = get_region(session['city'])
-    if session['region'] is None:
-        flash(
-            'MovR is not fully supported in {0}.\n Application is now assuming you are in New York.'
-            .format(session['city']))
-        session['city'] = 'new york'
-        session['region'] = 'gcp-us-east1'
     session['riding'] = None
     return render_template('home.html',
-                           available=session['region'],
+                           region=session['region'],
                            city=session['city'])
 
 
