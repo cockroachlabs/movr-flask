@@ -1,7 +1,7 @@
 # This file contains utility functions
 
 
-def get_region(city):
+def get_region(city, latlong=None):
     """Returns the cloud provider region closest to a supported city. Note that the region names are specific to the cloud provider, and must match the database locality region names.
 
     Arguments:
@@ -17,4 +17,16 @@ def get_region(city):
     elif city in ('amsterdam', 'paris', 'rome'):
         return 'gcp-europe-west1'
     else:
-        return None
+        try:
+            long = float(latlong.split(",")[1])
+            # Place in US East region if between Dallas,TX and Nuuk,Greenland
+            if (long >= -96 and long <= -52):
+                return 'gcp-us-east1'
+            # Place in US West region if between Dallas,TX and Hong Kong
+            if (long <= -96 or long >= 118):
+                return 'gcp-us-west1'
+            # Place all else in Europe West region
+            else:
+                return 'gcp-europe-west1'
+        except Exception:
+            raise

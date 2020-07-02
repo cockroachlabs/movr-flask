@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-cockroachdb = "*"
+sqlalchemy-cockroachdb = "*"
 psycopg2-binary = "*"
 SQLAlchemy = "*"
 SQLAlchemy-Utils = "*"

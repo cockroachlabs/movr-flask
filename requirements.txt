@@ -1,4 +1,4 @@
-cockroachdb
+sqlalchemy-cockroachdb
 psycopg2-binary
 SQLAlchemy
 SQLAlchemy-Utils
