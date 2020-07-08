@@ -1,8 +1,15 @@
 # MovR
 
-## Overview
-
 This repo contains the source code for an example implementation of a multi-region application for the fictional vehicle-sharing company [MovR](https://www.cockroachlabs.com/docs/dev/movr.html).
+
+- [Overview](#overview) gives a high-level overview the MovR application stack. 
+- [Requirements](#requirements) lists what you'll need, depending on if you're doing local development, production deployment, or both. 
+- [Local Deployment](#local-deployment) describes how to set up your local machine for ongoing development and testing.
+- [Multi-region deployment](#multi-region-deployment) outlines how to deploy both the CockroachDB database and the MovR application to the cloud.
+
+For a detailed tutorial on multi-region application development and deployment for this repo, see [Develop and Deploy a Multi-Region Web Application](https://www.cockroachlabs.com/docs/stable/multi-region-overview.html) on the Cockroach Labs documentation site.
+
+## Overview
 
 The application stack consists of the following components:
 
@@ -13,53 +20,108 @@ The application stack consists of the following components:
 - A Flask server that handles requests from client web browsers.
 - HTML files that define web pages that the Flask server renders.
 
-For a detailed tutorial on multi-region application development and deployment for this repo, see [Develop and Deploy a Multi-Region Web Application](https://www.cockroachlabs.com/docs/stable/multi-region-overview.html) on the Cockroach Labs documentation site.
-
 ## Requirements
 
-Make sure that you have installed the following on your local machine:
+For both local and production deployment, you'll need:
 
-- [CockroachDB](https://www.cockroachlabs.com/docs/stable/install-cockroachdb-mac.html/install-cockroachdb-mac.html)
+- [CockroachDB](https://www.cockroachlabs.com/docs/stable/install-cockroachdb-mac.html)
+- A Google API Key, enabled for Maps Static API:
+  - [Create a new Google API Key](https://developers.google.com/maps/documentation/maps-static/get-api-key), if you don't already have one.
+  - If you have an existing key, you can use it for this application by [enabling the Maps Static API](https://console.cloud.google.com/apis/library/static-maps-backend.googleapis.com?q=static).
+  
+Follow the sections below based on whether you are doing local development or production deployment.
+   
+#### Requirements For Local Development
+
+For local development, you'll need the following:
+
 - [Python 3](https://www.python.org/downloads/)
-- [`pipenv`](https://docs.pipenv.org/en/latest/install/#installing-pipenv) (for debugging)
-- [Google Cloud SDK](https://cloud.google.com/sdk/install) (for production deployments)
-- [Docker](https://docs.docker.com/v17.12/docker-for-mac/install/) (for production deployments)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (for production deployments)
+- [`pipenv`](https://docs.pipenv.org/en/latest/install/#installing-pipenv)
 
-There are a number of Python libraries that you also need to run the application, including `flask`, `sqlalchemy`, and `sqlalchemy-cockroachdb`. Rather than downloading these dependencies directly from PyPi to your machine, you should list them in dependency configuration files (see [Local Deployment](#local-deployment) and [Multi-region deployment](#multi-region-deployment) for examples).
+There are a number of Python libraries that you also need to run the application, including `flask`, `sqlalchemy`, and `cockroachdb`. 
+Rather than downloading these dependencies directly from PyPi to your machine, you should list them in dependency configuration files 
+(see [Local Deployment](#local-deployment) and [Multi-region deployment](#multi-region-deployment) for examples).
+
+#### Requirements For Production Deployment
+
+To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service and a Kubernetes engine. For our deployment example, we use GCP.
+For this, you will need to have the following installed on your local machine:
+
+- [Google Cloud SDK](https://cloud.google.com/sdk/install)
+- [Docker](https://docs.docker.com/v17.12/docker-for-mac/install/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 ## Local Deployment
 
-### Database setup
+### Database and Environment Setup
 
-In production, you want to start a secure CockroachDB cluster, with nodes on machines located in different areas of the world. For debugging purposes, you can just use the [`cockroach demo`](https://www.cockroachlabs.com/docs/stable/cockroach-demo.html) command. This command starts up an insecure, virtual nine-node cluster.
+In production, you want to start a secure CockroachDB cluster, with nodes on machines located in different areas of the world. For debugging purposes, you can just use the [`cockroach demo`](https://www.cockroachlabs.com/docs/stable/cockroach-demo.html) command. 
+The steps below walk you through how to start up an insecure, virtual nine-node cluster.
 
-1. Run `cockroach demo`, with the `--nodes` and `--demo-locality` flags. The database schema provided in this repo assumes the [GCP region names](https://cloud.google.com/about/locations/). 
+> Note: Shutting down a cluster that was run in demo mode erases all data in the database. 
+> Because demo mode doesn't allow you to specify a specific database port, you will need 
+> to rerun steps 1-3 below upon restarting `cockroach demo` to reinitialize your database 
+> and environment.
+
+1. Run `cockroach demo` in `--insecure` mode with the `--nodes` and `--demo-locality` flags. The database schema provided in this repo assumes the [GCP region names](https://cloud.google.com/about/locations/). 
 
     ~~~ shell
-    $ cockroach demo \
+    $ cockroach demo --insecure \
     --nodes=9 \
     --demo-locality=region=gcp-us-east1:region=gcp-us-east1:region=gcp-us-east1:region=gcp-us-west1:region=gcp-us-west1:region=gcp-us-west1:region=gcp-europe-west1:region=gcp-europe-west1:region=gcp-europe-west1
     ~~~
 
+    Once the database finishes initializing, you should see a SQL shell prompt:
+    
     ~~~
     root@127.0.0.1:<some_port>/movr> 
     ~~~
 
     Keep this terminal window open. Closing it will shut down the virtual cluster.
+    
+    Also take note of the value for `<some_port>`, as you'll be using that for the next step.
 
-1. Copy the connection string at the prompt (e.g., `root@127.0.0.1:<some_port>/movr`). 
-
-1. In a separate terminal window, run the following command to load `dbinit.sql` (located at the top level of the repo) to the demo database:
-
-    ~~~ shell
-    $ cockroach sql --insecure --url='postgresql://root@127.0.0.1:<some_port>/movr' < dbinit.sql
+1. Configure environment variables
+     
+    Because we use `<some_port>` in a few places, let's save the port from the previous step 
+    into a shell environment variable named `MOVR_PORT`:
+    
+    ~~~
+    export MOVR_PORT=<some_port> 
+    ~~~
+    
+    The MovR application also uses Google Maps Static API, so we'll also store your
+    Google API Key into an environment variable as well:
+    
+    ~~~
+    export MOVR_MAPS_API=<your_google_api_key>
     ~~~
 
+2. Import initial application data and configure your `.env`.
+
+    Next we'll run `./init.sh`, which:
+    
+    - loads `dbinit.sql` into your running CockroachDB cluster, then
+    - inserts the variables above into `.env`, which is then used by Pipenv to automatically set those variables in a Pipenv virtual environment.
+
+    In order to run the script you'll need to set execute permission on your script:
+    
+    ~~~
+    chmod +x init.sh
+    ~~~
+
+    Now, you're ready to run the script:
+    ~~~
+    ./init.sh    
+    ~~~
+    
 ### Application setup
 
-In production, you probably want to containerize your application and deploy it with k8s. For debugging, use [`pipenv`](https://pypi.org/project/pipenv/), a tool that includes `pip` (to make dependencies) and `virtualenv` (to create virtual environments).
+In production, you probably want to containerize your application and deploy it with k8s. 
+For local deployment and development, use [`pipenv`](https://pypi.org/project/pipenv/), a tool that includes `pip` (to make dependencies) and `virtualenv` (to create virtual environments).
 
+> Note: You only need to initialize your virtual environment once (`pipenv --three; pipenv install`). For ongoing development, you can skip to activating the shell (`pipenv shell`) and then running the server file.
+>
 1. Run the following command to initialize the project's virtual environment:
 
     ~~~ shell
@@ -100,17 +162,18 @@ In production, you probably want to containerize your application and deploy it 
     $ pipenv install
     ~~~
 
-1. To connect to a SQL database (like CockroachDB) from a client, you need a [SQL connection string](https://en.wikipedia.org/wiki/Connection_string). Rather than hard-coding the connection string into the source code, the application reads it from an environment variable. Pipenv automatically sets any variables defined in a `.env` file as environment variables in a Pipenv virtual environment. 
+1. Configure `.env` further if needed.
 
-    So, open `.env`, and edit the `DB_URI` environment variable so that it matches the connection string for the demo cluster that you started earlier (you should just need to change the `<port>`). Note that SQLAlchemy requires the connection string protocol to be specific to the CockroachDB dialect.
+    Pipenv automatically sets any variables defined in a `.env` file as environment variables in a Pipenv virtual environment.
+    This lets the application read values from an environement variable, rather than us needing to hard-code values directly into the source code.
 
-    For example:
-
-    ~~~
-    DB_URI = 'cockroachdb://root@127.0.0.1:52382/movr'
-    ~~~
+    In [Database and Environment Setup](#database-and-environment-setup) section, you ran `./init.sh` which
+    set the `DB_URI` and `API_KEY` keys in your `.env` file:
     
-    You can also specify other variables in this file that you'd rather not hard-code in the application, like API keys and secret keys used by the application. For debugging purposes, you should leave these variables as they are.
+    - `DB_URI` is the [SQL connection string](https://en.wikipedia.org/wiki/Connection_string) needed for SQLAlchemy to connect to CockroachDB. Note that SQLAlchemy requires the connection string protocol to be specific to the CockroachDB dialect.
+    - `API_KEY` should be your Google Static Maps API Key.
+    
+    You can also specify other variables in this file that you'd rather not hard-code in the application, like other API keys and secret keys used by the application. For debugging purposes, you should leave these variables as they are.
 
 1. Activate the virtual environment:
 
@@ -197,7 +260,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
 
 1. Create a gcloud project on the [GCP console](https://console.cloud.google.com/).
 
-1. **Optional:** Enable the [Google Maps Embed API](https://console.cloud.google.com/apis/library), create an API key, restrict the API key to all subdomains of your domain name (e.g. `https://site.com/*`), and retrieve the API key. 
+1. **Optional:** Enable the [Google Maps Static API](https://console.cloud.google.com/apis/library), create an API key, restrict the API key to all subdomains of your domain name (e.g. `https://site.com/*`), and retrieve the API key. 
 
     **Note:** The example HTML templates include maps. Not providing an API key to the application will not break the application.
 

@@ -2,6 +2,6 @@
 flaskenv/*
 .vscode/*
 *.lock
-.idea/vcs.xm
+.idea/*
 certs/
 movr.yaml
