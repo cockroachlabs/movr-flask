@@ -1,3 +1,37 @@
+{#
+ # `render_nav()` is a helper macro, which takes a [navbar] (defined below),
+ # and an optional argument [href_append], which gets appended to href
+ # (e.g. user_id, vehicle_id, etc).
+#}
+{% macro render_nav(navbar, href_append='') -%}
+  {% for href, id, caption in navbar %}
+    <li{% if id == active_page %} class="active"{% endif
+    %}><a href="{{ href+href_append|e }}">{{ caption|e }}</a></li>
+  {% endfor %}
+{%- endmacro %}
+{#
+ # the `navbar_*` lists below are navigation settings in the form of:
+ #     ([url], [active_page], [url_text])
+ #
+ # `navbar_is_authenticated_href_append_id` is a separate list, because
+ # we append user_id to href
+#}
+{% set navbar_authenticated = [
+    ('/vehicles', 'vehicles', 'Vehicles'),
+    ('/rides', 'rides', 'Rides'),
+    ('/users', 'users', 'Users'),
+    ('/vehicles/add', 'vehicles_add', 'Add a vehicle'),
+]
+-%}
+{% set navbar_authenticated_append_user_id = [
+    ('/users/', 'user', 'Your profile'),
+]
+-%}
+{% set navbar_not_authenticated = [
+    ('/login', 'login', 'Log in'),
+    ('/register', 'register', 'Sign up'),
+]
+-%}
 <div class="navbar navbar-default">
   <a class="navbar-brand">
     <img src="/static/movr-symbol.png" height="30">
@@ -5,35 +39,14 @@
   {% if available %}
   <div class="navbar">
     <ul class="nav navbar-nav">
-      <li>
-        <a href="/">Home</a>
-      </li>
       {% if current_user.is_active %}
-      <li>
-        <a href="/vehicles">Vehicles</a>
-      </li>
-      <li>
-        <a href="/rides">Rides</a>
-      </li>
-      <li>
-        <a href="/users">Users</a>
-      </li>
-      <li>
-        <a href="/vehicles/add">Add a vehicle</a>
-      </li>
-      <li>
-        <a href="/users/{{ current_user.id }}">Your profile</a>
-      </li>
-      <li>
-        <a href="/logout">Log out</a>
-      </li>
+        {{ render_nav(navbar_authenticated) }}
+        {{ render_nav(navbar_authenticated_append_user_id, current_user.id) }}
+        <li>
+          <a href="/logout">Log out</a></li>
+        </li>
       {% else %}
-      <li>
-        <a href="/login">Log in</a>
-      </li>
-      <li>
-        <a href="/register">Sign up</a>
-      </li>
+        {{ render_nav(navbar_not_authenticated) }}
       {% endif %}
     </ul>
   </div>
