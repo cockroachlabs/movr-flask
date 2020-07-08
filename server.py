@@ -1,6 +1,6 @@
 # This file contains the main web application server
 from flask import Flask, render_template, session, redirect, flash, url_for, Markup, request
-from flask_bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap, WebCDN
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
 from movr.movr import MovR
@@ -20,6 +20,18 @@ protocol = ('https', 'http')[app.config.get('DEBUG') == 'True']
 conn_string = app.config.get('DB_URI')
 movr = MovR(conn_string)
 
+# Update Bootstrap from v3.3.7 to v4.5
+app.extensions['bootstrap']['cdns']['bootstrap'] = WebCDN(
+    '//getbootstrap.com/docs/4.5/dist/'
+)
+
+
+# Test Example
+@app.route('/pricing', methods=['GET'])
+def pricing():
+    return render_template('pricing.html',
+                           region=session['region'],
+                           city=session['city'])
 
 # Define user_loader function for LoginManager
 @login.user_loader
