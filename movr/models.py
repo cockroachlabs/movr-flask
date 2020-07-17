@@ -22,6 +22,7 @@ class User(Base, UserMixin):
     """
     __tablename__ = 'users'
     id = Column(UUID)
+    region = Column(String)
     city = Column(String)
     first_name = Column(String)
     last_name = Column(String)
@@ -29,7 +30,7 @@ class User(Base, UserMixin):
     username = Column(String, unique=True)
     password_hash = Column(String)
     is_owner = Column(Boolean)
-    PrimaryKeyConstraint(city, id)
+    PrimaryKeyConstraint(region, city, id)
 
     def set_password(self, password):
         """
@@ -54,6 +55,7 @@ class Vehicle(Base):
     """
     __tablename__ = 'vehicles'
     id = Column(UUID)
+    region = Column(String)
     city = Column(String)
     type = Column(String)
     owner_id = Column(UUID, ForeignKey('users.id'))
@@ -62,7 +64,7 @@ class Vehicle(Base):
     last_location = Column(String)
     color = Column(String)
     brand = Column(String)
-    PrimaryKeyConstraint(city, id)
+    PrimaryKeyConstraint(region, id)
 
     def __repr__(self):
         return "<Vehicle(city='{0}', id='{1}', type='{2}', status='{3}')>".format(
@@ -81,16 +83,17 @@ class Ride(Base):
     """
     __tablename__ = 'rides'
     id = Column(UUID)
-    city = Column(String, ForeignKey('vehicles.city'))
+    region = Column(String, ForeignKey('vehicles.region'))
+    city = Column(String)
     rider_id = Column(UUID, ForeignKey('users.id'))
-    rider_city = Column(String, ForeignKey('users.city'))
+    rider_region = Column(String, ForeignKey('users.region'))
     vehicle_id = Column(UUID, ForeignKey('vehicles.id'))
     start_location = Column(String)
     end_location = Column(String)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     length = Column(Interval)
-    PrimaryKeyConstraint(city, id)
+    PrimaryKeyConstraint(region, id)
 
     def __repr__(self):
         return "<Ride(city='{0}', id='{1}', rider_id='{2}', vehicle_id='{3}')>".format(

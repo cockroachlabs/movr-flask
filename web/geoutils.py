@@ -1,7 +1,7 @@
 # This file contains utility functions
+from geopy.geocoders import Nominatim
 
-
-def get_region(city, latlong=None):
+def get_region(city):
     """Returns the cloud provider region closest to a supported city. Note that the region names are specific to the cloud provider, and must match the database locality region names.
 
     Arguments:
@@ -10,6 +10,7 @@ def get_region(city, latlong=None):
     Returns:
         String -- The cloud provider region closest to the client's location.
     """
+
     if city in ('new york', 'boston', 'washington_dc'):
         return 'gcp-us-east1'
     elif city in ('san francisco', 'seattle', 'los angeles'):
@@ -18,7 +19,8 @@ def get_region(city, latlong=None):
         return 'gcp-europe-west1'
     else:
         try:
-            long = float(latlong.split(",")[1])
+            geolocator = Nominatim(user_agent='MovR-Flask')
+            long = geolocator.geocode(city).longitude
             # Place in US East region if between Dallas,TX and Nuuk,Greenland
             if (long >= -96 and long <= -52):
                 return 'gcp-us-east1'

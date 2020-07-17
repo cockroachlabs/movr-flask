@@ -47,16 +47,7 @@ class RemoveVehicleForm(FlaskForm):
 class RegisterForm(FlaskForm):
     """User registration form class.
     """
-    city = SelectField('City: ',
-                       choices=[('new york', 'New York'), ('boston', 'Boston'),
-                                ('washington dc', 'Washington DC'),
-                                ('san francisco', 'San Francisco'),
-                                ('seattle', 'Seattle'),
-                                ('los angeles', 'Los Angeles'),
-                                ('chicago', 'Chicago'), ('detroit', 'Detroit'),
-                                ('minneapolis', 'Minneapolis'),
-                                ('amsterdam', 'Amsterdam'), ('paris', 'Paris'),
-                                ('rome', 'Rome')])
+    city = StringField('City: ', validators=[data_required()])
     first_name = StringField('First name: ', validators=[data_required()])
     last_name = StringField('Last name: ', validators=[data_required()])
     email = StringField('Email', validators=[data_required()])

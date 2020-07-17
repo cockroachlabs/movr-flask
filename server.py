@@ -39,14 +39,12 @@ def home_page():
             'Application is in DEBUG mode. Currently using New York as city and gcp-us-east1 as region.')
     else:
         try:
-            place = request.headers.get("X-PLACE").split(",", 1)
+            session['city'] = request.headers.get("X-City").lower()
             # This header attribute is passed by the HTTP load balancer, to its
             # configured backend. The header must be configured manually in the
             # cloud service provider's console to include this attribute. See
             # README for more details.
-            session['city'] = place[0].lower()
-            session['latlong'] = place[1]
-            session['region'] = get_region(session['city'], session['latlong'])
+            session['region'] = get_region(session['city'])
         except Exception as error:
             session['city'] = 'new york'
             session['region'] = 'gcp-us-east1'
@@ -116,6 +114,7 @@ def register():
         if form.validate_on_submit():
             try:
                 movr.add_user(city=form.city.data,
+                              region=get_region(form.city.data.lower()),
                               first_name=form.first_name.data,
                               last_name=form.last_name.data,
                               email=form.email.data,
@@ -146,7 +145,7 @@ def register():
 @app.route('/users', methods=['GET'])
 def users():
     if current_user.is_authenticated:
-        users = movr.get_users(session['city'])
+        users = movr.get_users(session['region'], session['city'])
         return render_template('users.html',
                                title='Users',
                                users=users,
@@ -161,7 +160,7 @@ def users():
 @login_required
 @app.route('/users/<user_id>', methods=['GET'])
 def user(user_id):
-    v = movr.get_vehicles(city=current_user.city)
+    v = movr.get_vehicles(region=current_user.region, city=current_user.city)
     form_u = RemoveUserForm()
     form_v = RemoveVehicleForm()
     if current_user.is_authenticated and user_id == current_user.id:
@@ -183,7 +182,7 @@ def user(user_id):
 @login_required
 @app.route('/users/remove/<user_id>', methods=['POST'])
 def remove_user(user_id):
-    movr.remove_user(city=current_user.city, user_id=user_id)
+    movr.remove_user(region=current_user.region, city=current_user.city, user_id=user_id)
     logout_user()
     session['riding'] = None
     flash('You have successfully deleted your account.')
@@ -195,7 +194,7 @@ def remove_user(user_id):
 @app.route('/vehicles', methods=['GET'])
 def vehicles():
     form = StartRideForm()
-    vehicles = movr.get_vehicles(session['city'])
+    vehicles = movr.get_vehicles(session['region'], session['city'])
     return render_template('vehicles.html',
                            title='Vehicles',
                            vehicles=vehicles,
@@ -212,6 +211,7 @@ def add_vehicle():
     if form.validate_on_submit():
         try:
             movr.add_vehicle(city=current_user.city,
+                             region=current_user.region,
                              owner_id=current_user.id,
                              last_location=form.location.data,
                              type=form.type.data,
@@ -236,7 +236,7 @@ def add_vehicle():
 @login_required
 @app.route('/vehicles/remove/<vehicle_id>', methods=['POST'])
 def remove_vehicle(vehicle_id):
-    movr.remove_vehicle(city=current_user.city, vehicle_id=vehicle_id)
+    movr.remove_vehicle(region=current_user.region, city=current_user.city, vehicle_id=vehicle_id)
     flash('You have successfully removed a vehicle.')
     return redirect('{0}{1}{2}'.format(
         url_for('users', _external=True, _scheme=protocol), '/',
@@ -278,9 +278,10 @@ def start_ride(vehicle_id):
                 if r['end_time'] is None:
                     session['riding'] = True
                     pass
-        movr.start_ride(city=session['city'],
+        movr.start_ride(region=session['region'],
+                        city=session['city'],
                         rider_id=current_user.id,
-                        rider_city=current_user.city,
+                        rider_region=current_user.region,
                         vehicle_id=vehicle_id)
         session['riding'] = True
         flash('Ride started.')
@@ -296,7 +297,8 @@ def start_ride(vehicle_id):
 def end_ride(ride_id):
     try:
         form = EndRideForm()
-        movr.end_ride(city=session['city'],
+        movr.end_ride(region=session['region'],
+                      city=session['city'],
                       ride_id=ride_id,
                       location=form.location.data)
         session['riding'] = False
