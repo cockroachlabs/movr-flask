@@ -1,0 +1,239 @@
+/*BASE*/
+
+h1{
+  font-weight: 600;
+  font-size: 40px;
+  color: #37384E;
+}
+
+h5{
+  font-size: 22px;
+  font-weight: 600;
+  color: #171720;
+}
+
+form .btn {
+  width: 100%;
+}
+
+.btn-outline-primary{
+  background-color:rgba(247, 79, 120, 0.09);
+}
+
+.flashes {
+  padding: 0;
+}
+
+.desc>div{
+  min-width: 130px;
+}
+
+.desc .label{
+  font-size: 14px;
+  color: #9E9FB4;
+}
+
+.avatar{
+  border: 2px solid #F74F78;
+  color: #F74F78;
+  border-radius: 50%;
+  text-transform: uppercase;
+  width: 40px;
+  height: 40px;
+  font-weight: 600;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*STATUS COMPONENT*/
+.status{
+  color: #9E9FB4;
+  padding-left: 20px;
+  position: relative;
+}
+
+.status:before{
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: grey;
+  position: absolute;
+  left: 0;
+  top: 6px;
+}
+
+.active.status:before{
+  background: #16C995;
+}
+
+.unavailable.status:before{
+  background: #FFB15C;
+}
+
+/* AUTH */
+.auth {
+  background: url("../img/login-bg.jpg") no-repeat top right;
+  background-size: contain;
+}
+.auth .container {
+  position: relative;
+}
+
+.auth .logo {
+  position: absolute;
+  top: 100px;
+}
+
+.auth .row {
+  min-height: 100vh;
+  padding-top: 200px;
+  padding-bottom: 150px;
+}
+
+.auth footer {
+  position: absolute;
+  bottom: 50px;
+}
+
+.auth .form {
+  padding-bottom: 15px;
+}
+
+/*NAV*/
+
+.dropdown .nav-link{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.nav-left .nav-link{
+  font-weight: 400!important;
+  position: relative;
+}
+
+.nav-left .nav-link.active{
+  font-weight: 500!important;
+  color: #171720 !important;
+}
+
+.nav-left .nav-link.active:after{
+  content: '';
+  display: block;
+  background: #171720;
+  height: 3px;
+}
+
+
+.dropdown a img{
+  margin-top: -8px
+}
+
+.region{
+  padding-top: 15px;
+}
+
+.region img{
+  margin-top: -10px;
+}
+
+.sep{
+  height: 25px;
+  width: 0;
+  border: 1px solid #D9D9D9 !important;
+  margin: 10px 20px 0 20px;
+}
+
+
+
+/*VEHICLE CARD*/
+.vehicle{
+    box-shadow: 0px 8px 23px #DFDFEB;
+    border: 1px solid #DFDFEB;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.vehicle .map{
+  background: #212121;
+  color: #212121;
+  height: 170px;
+}
+
+.vehicle .content{
+  padding: 25px 40px;
+  position: relative;
+}
+
+.vehicle .desc{
+  border-bottom: 1px solid #DFDFEB;
+  padding: 16px 0;
+  position: relative;
+}
+
+.vehicle .status{
+  position: absolute;
+  top: 25px;
+  right: 25px;
+}
+
+.vehicle form {
+  padding-top: 30px;
+  width: 100%;
+}
+
+/*RIDES*/
+.ride{
+  border-bottom: 1px solid #DFDFEB;
+  padding: 20px 0;
+  position: relative;
+}
+
+.ride .row{
+  margin: 0;
+}
+
+.ride .status{
+  position: absolute;
+  right: 0;
+  top: 20px;
+}
+
+/*USERS*/
+.users{
+  padding: 20px 0;
+  border-bottom: 1px solid #DFDFEB;
+}
+.users .row{
+  margin: 0;
+}
+
+.users .avatar{
+  margin-top: -5px;
+}
+
+/*PROFILE*/
+.profile{
+  border-bottom: 1px solid #DFDFEB;
+  margin-bottom: 30px;
+}
+.profile .desc{
+  color: #37384E;
+  margin-bottom: 18px;
+}
+
+.profile .avatar{
+  width: 80px;
+  height: 80px;
+  border-width: 3px;
+  margin: 50px auto 20px auto;
+}
+
+.your-vheicles .container{
+  margin-top: 30px;
+}

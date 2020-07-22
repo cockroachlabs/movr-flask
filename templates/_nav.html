@@ -1,42 +1,91 @@
-<div class="navbar navbar-default">
-  <a class="navbar-brand">
-    <img src="/static/movr-symbol.png" height="30">
-  </a>
-  {% if available %}
-  <div class="navbar">
-    <ul class="nav navbar-nav">
-      <li>
-        <a href="/">Home</a>
-      </li>
-      {% if current_user.is_active %}
-      <li>
-        <a href="/vehicles">Vehicles</a>
-      </li>
-      <li>
-        <a href="/rides">Rides</a>
-      </li>
-      <li>
-        <a href="/users">Users</a>
-      </li>
-      <li>
-        <a href="/vehicles/add">Add a vehicle</a>
-      </li>
-      <li>
-        <a href="/users/{{ current_user.id }}">Your profile</a>
-      </li>
-      <li>
-        <a href="/logout">Log out</a>
-      </li>
-      {% else %}
-      <li>
-        <a href="/login">Log in</a>
-      </li>
-      <li>
-        <a href="/register">Sign up</a>
-      </li>
-      {% endif %}
-    </ul>
-  </div>
-  {% else %}
-  {% endif %}
+<div class="container">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light main">
+    <a class="navbar-brand">
+      <img src="/static/img/horizontal-logo.png" width="125">
+    </a>
+    {% if available %}
+
+    <button 
+      class="navbar-toggler" 
+      type="button" 
+      data-toggle="collapse" 
+      data-target="#navbarNavDropdown" 
+      aria-controls="navbarNavDropdown" 
+      aria-expanded="false" 
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+
+        {% if current_user.is_active %}
+        <ul class="navbar-nav  mr-auto mt-2 mt-lg-0 nav-left">
+          <li class="nav-item">
+            <a 
+              class="nav-link {% if active_page == 'vehicles' %}active{% endif%}" 
+              href="/vehicles"
+            >
+              Vehicles
+            </a>
+          </li>
+          <li class="nav-item">
+            <a 
+              class="nav-link {% if active_page == 'rides' %}active{% endif%}" 
+              href="/rides"
+            >
+              My Rides
+            </a>
+          </li>
+          <li class="nav-item">
+            <a 
+              class="nav-link {% if active_page == 'users' %}active{% endif%}"
+              href="/users"
+            >
+              Users
+            </a>
+          </li>
+        </ul>
+
+
+        <ul class="navbar-nav my-2 nav-right">
+          <li class="nav-item">
+            <a class="btn btn-outline-primary" href="/vehicles/add">+ New vehicle</a>
+          </li>
+
+          <li class="nav-item"><div class="sep"></div></li>
+          <div class="navbar-text region">
+            <img src="/static/img/icons/map-pin.svg">
+            <bf class="text-capitalize">{{ session['city'] }}</bf>
+            ({{ session['region'] }})
+          </div>
+          <li class="nav-item"><div class="sep"></div></li>
+          
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+              <img src="/static/img/icons/user.svg">
+              <img src="/static/img/icons/chevron-down.svg">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+              <a class="dropdown-item" href="/users/{{ current_user.id }}">Your profile</a>
+              <a class="dropdown-item" href="/logout">Log out</a>
+            </div>
+          </li>
+        </ul>
+
+        {% else %}
+        <ul class="navbar-nav"></ul>
+          <li class="nav-item">
+            <a class="nav-link" href="/login">Log in</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/register">Sign up</a>
+          </li>
+        </ul>
+        {% endif %}
+     
+    </div>
+    {% else %}
+    {% endif %}
+  </nav>
 </div>

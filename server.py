@@ -1,6 +1,6 @@
 # This file contains the main web application server
 from flask import Flask, render_template, session, redirect, flash, url_for, Markup, request
-from flask_bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap, WebCDN
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
 from movr.movr import MovR
@@ -8,6 +8,9 @@ from web.forms import CredentialForm, RegisterForm, VehicleForm, StartRideForm, 
 from web.config import Config
 from web.geoutils import get_region
 from sqlalchemy.exc import DBAPIError
+
+DEFAULT_ROUTE_AUTHENTICATED = "vehicles"
+DEFAULT_ROUTE_NOT_AUTHENTICATED = "login_page"
 
 # Initialize the app
 app = Flask(__name__)
@@ -20,6 +23,10 @@ protocol = ('https', 'http')[app.config.get('DEBUG') == 'True']
 conn_string = app.config.get('DB_URI')
 movr = MovR(conn_string)
 
+# Update Bootstrap from v3.3.7 to v4.5
+app.extensions['bootstrap']['cdns']['bootstrap'] = WebCDN(
+    '//getbootstrap.com/docs/4.5/dist/'
+)
 
 # Define user_loader function for LoginManager
 @login.user_loader
@@ -30,7 +37,6 @@ def load_user(user_id):
 # ROUTES
 # Home page
 @app.route('/', methods=['GET'])
-@app.route('/home', methods=['GET'])
 def home_page():
     if app.config.get('DEBUG') == 'True':
         session['city'] = 'new york'
@@ -52,18 +58,19 @@ def home_page():
             session['region'] = 'gcp-us-east1'
             flash(
                 '{0}\n Unable to retrieve client location information.\n Application is now assuming you are in New York.'
-                .format(error))
+                    .format(error))
     session['riding'] = None
-    return render_template('home.html',
-                           region=session['region'],
-                           city=session['city'])
+    if current_user.is_authenticated:
+        return redirect(url_for(DEFAULT_ROUTE_AUTHENTICATED, _external=True, _scheme=protocol))
+    else:
+        return redirect(url_for(DEFAULT_ROUTE_NOT_AUTHENTICATED, _external=True, _scheme=protocol))
 
 
 # Login page
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
     if current_user.is_authenticated:
-        return redirect(url_for('home_page', _external=True, _scheme=protocol))
+        return redirect(url_for(DEFAULT_ROUTE_AUTHENTICATED, _external=True, _scheme=protocol))
     else:
         form = CredentialForm()
         if form.validate_on_submit():
@@ -83,7 +90,7 @@ def login_page():
                                 _scheme=protocol))
                 login_user(user)
                 return redirect(
-                    url_for('home_page', _external=True, _scheme=protocol))
+                    url_for(DEFAULT_ROUTE_AUTHENTICATED, _external=True, _scheme=protocol))
             except Exception as error:
                 flash('{0}'.format(error))
                 return redirect(
@@ -128,7 +135,7 @@ def register():
             except DBAPIError as sql_error:
                 flash(
                     '{0}\n Registration failed. Make sure that you choose a unique username!'
-                    .format(sql_error))
+                        .format(sql_error))
                 return redirect(
                     url_for('register', _external=True, _scheme=protocol))
             except Exception as error:
@@ -166,8 +173,7 @@ def user(user_id):
     form_v = RemoveVehicleForm()
     if current_user.is_authenticated and user_id == current_user.id:
         return render_template('user.html',
-                               title='{0} {1}'.format(current_user.first_name,
-                                                      current_user.last_name),
+                               title='My Profile',
                                form_u=form_u,
                                form_v=form_v,
                                vehicles=v,
@@ -187,7 +193,7 @@ def remove_user(user_id):
     logout_user()
     session['riding'] = None
     flash('You have successfully deleted your account.')
-    return redirect(url_for('home_page', _external=True, _scheme=protocol))
+    return redirect(url_for(DEFAULT_ROUTE_NOT_AUTHENTICATED, _external=True, _scheme=protocol))
 
 
 # Vehicles page
