@@ -1,20 +1,26 @@
-{% extends 'layout.html' %}
+{% extends 'layouts/main.html' %}
+{% set active_page = "users" %}
 
 {% block app_content %}
-<div class="container">
-    <div class="row align-items-center">
-        {% for user in users %}
-        <a class="list-group-item">
-            <div class="d-flex w-100 justify-content-between">
-                <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+
+    {% for user in users %}
+        <div class="users container">
+            <div class="row">
+                <div class="avatar">{{ user.first_name }}</div>
+
+                <div class="col">
+                    <div class="row">
+                        <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+                    </div>
+                    <div class="row desc">
+                        <div>
+                            <div class="label">Home city</div> 
+                            <bf class="text-capitalize">{{ user.city }}</bf>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p>Home city: <bf class="text-capitalize">{{ user.city }}</bf>
-            </p>
-            {% if user.is_owner %}
-            <p>This user is also a vehicle owner!</p>
-            {% endif %}
-        </a>
-        {% endfor %}
-    </div>
-</div>
+        </div>
+    {% endfor %}
+
 {% endblock %}

@@ -1,38 +1,61 @@
-{% extends 'layout.html' %}
+{% extends 'layouts/main.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% set active_page = "rides" %}
 
 {% block app_content %}
-<p class="text-center">You are logged in as {{ current_user.username }}. Go to the <a href="/vehicles">Vehicles</a> page
-    to start a ride.</p>
+
+<p class="text-center">
+    You are logged in as {{ current_user.username }}. Go to the <a href="/vehicles">Vehicles</a> page
+    to start a ride.
+</p>
+
 {% for ride in rides %}
-<div class="container">
-    <div class="row align-items-center">
-        {% if current_user.id == ride.rider_id %}
-        <a class="list-group-item">
-            <h5>Ride ID: {{ ride.id }}</h5>
-            <p>City: <bf class="text-capitalize">{{ ride.city }}</bf>
-            </p>
-            <p>Vehicle ID: {{ ride.vehicle_id }}</p>
-            <p>This ride started {{ ride.start_time }}.</p>
-            {% if ride.end_time != None %}
-            <p>This ride ended {{ ride.end_time }}, for a total length of {{ ride.length }}.</p>
-            {% endif %}
-            <div class="d-flex w-100 justify-content-between">
-                {% if ride.end_time == None %}
-                <p class="alert alert-success text-center" role="alert" style="width: 15rem;">Active</p>
-                <form class="form" method="POST" style="width: 25rem;" action="/rides/end/{{ ride.id }}">
-                    {{ form.hidden_tag() }}
-                    {{ wtf.form_field(form.location) }}
-                    {{ wtf.form_field(form.submit) }}
-                </form>
-                {% else %}
-                <p class="alert alert-warning text-center" role="alert" style="width: 15rem;">Inactive</p>
+    {% if current_user.id == ride.rider_id %}
+        <div class="container ride">
+            
+            <div class="row"><h5>Ride ID: {{ ride.id }}</h5></div>
+                
+            <div class="row desc">
+                <div>
+                    <div class="label">Location</div> 
+                    <bf class="text-capitalize">{{ ride.city }}</bf>
+                </div>
+
+                {% if ride.length != None %}
+                    <div>
+                        <div class="label">Ride duration</div> 
+                        <div class="formatDuration">{{ ride.length }}</div>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <div class="label">Start time</div>
+                    <div class="formatTime">{{ ride.start_time }}</div>
+                </div>
+                
+                {% if ride.end_time != None %}
+                    <div>
+                        <div class="label">End time</div> 
+                        <div class="formatTime">{{ ride.end_time }}</div>
+                    </div> 
                 {% endif %}
             </div>
-        </a>
-        {% endif %}
-    </div>
-</div>
+
+            {% if ride.end_time == None %}
+                <div class="row">
+                    <div class="status active">Active</div>
+                    <form class="form" method="POST" style="width: 25rem;" action="/rides/end/{{ ride.id }}">
+                        {{ form.hidden_tag() }}
+                        {{ wtf.form_field(form.location) }}
+                        {{ wtf.form_field(form.submit) }}
+                    </form>
+                </div>
+            {% else %}
+                <div class="status unavailable">Inactive</div>
+            {% endif %}
+
+        </div>
+    {% endif %}   
 {% endfor %}
 </div>
 {% endblock %}
