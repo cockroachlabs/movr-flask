@@ -319,6 +319,7 @@ def health():
     try:
         print('Health check.')
         status_code = Response(status=200)
+        print(str(status_code))
         return status_code
     except Exception as error:
         return error
