@@ -1,5 +1,5 @@
 # This file contains the main web application server
-from flask import Flask, render_template, session, redirect, flash, url_for, Markup, request
+from flask import Flask, render_template, session, redirect, flash, url_for, Markup, request, Response
 from flask_bootstrap import Bootstrap, WebCDN
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
@@ -35,9 +35,10 @@ def load_user(user_id):
 
 
 # ROUTES
-# Home page
+
+# Index
 @app.route('/', methods=['GET'])
-def home_page():
+def index():
     if app.config.get('DEBUG') == 'True':
         session['city'] = 'new york'
         session['region'] = 'gcp-us-east1'
@@ -312,6 +313,15 @@ def end_ride(ride_id):
         flash('{0}'.format(error))
         return redirect(url_for('rides', _external=True, _scheme=protocol))
 
+# Health check
+@app.route('/health', methods=['GET'])
+def health():
+    try:
+        print('Health check.')
+        status_code = Response(status=200)
+        return status_code
+    except Exception as error:
+        return error
 
 if __name__ == '__main__':
     app.run()
