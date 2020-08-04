@@ -18,6 +18,3 @@ Flask-Login = "*"
 WTForms = "*"
 gunicorn = "*"
 geopy = "*"
-
-[requires]
-python_version = "3.7"
