@@ -62,7 +62,7 @@ class Vehicle(Base):
     last_location = Column(String)
     color = Column(String)
     brand = Column(String)
-    PrimaryKeyConstraint(city, id)
+    PrimaryKeyConstraint(id)
 
     def __repr__(self):
         return "<Vehicle(city='{0}', id='{1}', type='{2}', status='{3}')>".format(
@@ -83,14 +83,13 @@ class Ride(Base):
     id = Column(UUID)
     city = Column(String, ForeignKey('vehicles.city'))
     rider_id = Column(UUID, ForeignKey('users.id'))
-    rider_city = Column(String, ForeignKey('users.city'))
     vehicle_id = Column(UUID, ForeignKey('vehicles.id'))
     start_location = Column(String)
     end_location = Column(String)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     length = Column(Interval)
-    PrimaryKeyConstraint(city, id)
+    PrimaryKeyConstraint(id)
 
     def __repr__(self):
         return "<Ride(city='{0}', id='{1}', rider_id='{2}', vehicle_id='{3}')>".format(

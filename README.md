@@ -74,23 +74,14 @@ The steps below walk you through how to start up an insecure, virtual nine-node 
     Once the database finishes initializing, you should see a SQL shell prompt:
     
     ~~~
-    root@127.0.0.1:<some_port>/movr> 
+    root@127.0.0.1:26257/movr> 
     ~~~
 
     Keep this terminal window open. Closing it will shut down the virtual cluster.
-    
-    Also take note of the value for `<some_port>`, as you'll be using that for the next step.
 
 1. Configure environment variables
-     
-    Because we use `<some_port>` in a few places, let's save the port from the previous step 
-    into a shell environment variable named `MOVR_PORT`:
     
-    ~~~
-    export MOVR_PORT=<some_port> 
-    ~~~
-    
-    The MovR application also uses Google Maps Static API, so we'll also store your
+    The MovR application uses Google Maps Static API, so we'll also store your
     Google API Key into an environment variable as well:
     
     ~~~
@@ -168,7 +159,7 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
     This lets the application read values from an environement variable, rather than us needing to hard-code values directly into the source code.
 
     In [Database and Environment Setup](#database-and-environment-setup) section, you ran `./init.sh` which
-    set the `DB_URI` and `API_KEY` keys in your `.env` file:
+    set the `DB_URI` and `API_KEY` variables in your `.env` file:
     
     - `DB_URI` is the [SQL connection string](https://en.wikipedia.org/wiki/Connection_string) needed for SQLAlchemy to connect to CockroachDB. Note that SQLAlchemy requires the connection string protocol to be specific to the CockroachDB dialect.
     - `API_KEY` should be your Google Static Maps API Key.

@@ -190,7 +190,7 @@ def user(user_id):
 @login_required
 @app.route('/users/remove/<user_id>', methods=['POST'])
 def remove_user(user_id):
-    movr.remove_user(city=current_user.city, user_id=user_id)
+    movr.remove_user(user_id=user_id)
     logout_user()
     session['riding'] = None
     flash('You have successfully deleted your account.')
@@ -243,7 +243,7 @@ def add_vehicle():
 @login_required
 @app.route('/vehicles/remove/<vehicle_id>', methods=['POST'])
 def remove_vehicle(vehicle_id):
-    movr.remove_vehicle(city=current_user.city, vehicle_id=vehicle_id)
+    movr.remove_vehicle(vehicle_id=vehicle_id)
     flash('You have successfully removed a vehicle.')
     return redirect('{0}{1}{2}'.format(
         url_for('users', _external=True, _scheme=protocol), '/',
@@ -287,7 +287,6 @@ def start_ride(vehicle_id):
                     pass
         movr.start_ride(city=session['city'],
                         rider_id=current_user.id,
-                        rider_city=current_user.city,
                         vehicle_id=vehicle_id)
         session['riding'] = True
         flash('Ride started.')
@@ -303,8 +302,7 @@ def start_ride(vehicle_id):
 def end_ride(ride_id):
     try:
         form = EndRideForm()
-        movr.end_ride(city=session['city'],
-                      ride_id=ride_id,
+        movr.end_ride(ride_id=ride_id,
                       location=form.location.data)
         session['riding'] = False
         flash('Ride ended.')
