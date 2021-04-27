@@ -11,6 +11,7 @@ class MovR:
     """
     Wraps the database connection. The class methods wrap database transactions.
     """
+
     def __init__(self, conn_string):
         """
         Establish a connection to the database, creating Engine and Sessionmaker objects.
@@ -21,32 +22,30 @@ class MovR:
         self.engine = create_engine(conn_string, convert_unicode=True)
         self.sessionmaker = sessionmaker(bind=self.engine)
 
-    def start_ride(self, city, rider_id, rider_city, vehicle_id):
+    def start_ride(self, city, rider_id, vehicle_id):
         """
         Wraps a `run_transaction` call that starts a ride.
 
         Arguments:
             city {String} -- The ride's city.
             rider_id {UUID} -- The user's unique ID.
-            rider_city {String} -- The user's city.
             vehicle_id {UUID} -- The vehicle's unique ID.
         """
         return run_transaction(
             self.sessionmaker, lambda session: start_ride_txn(
-                session, city, rider_id, rider_city, vehicle_id))
+                session, city, rider_id, vehicle_id))
 
-    def end_ride(self, city, ride_id, location):
+    def end_ride(self, ride_id, location):
         """
         Wraps a `run_transaction` call that ends a ride.
 
         Arguments:
-            city {String} -- The ride's city.
             ride_id {UUID} -- The ride's unique ID.
             location {String} -- The vehicle's last location.
         """
         return run_transaction(
             self.sessionmaker,
-            lambda session: end_ride_txn(session, city, ride_id, location))
+            lambda session: end_ride_txn(session, ride_id, location))
 
     def add_user(self, city, first_name, last_name, email, username, password):
         """
@@ -65,39 +64,29 @@ class MovR:
             lambda session: add_user_txn(session, city, first_name, last_name,
                                          email, username, password))
 
-    def remove_user(self, city, user_id):
+    def remove_user(self, user_id):
         """
         Wraps a `run_transaction` call that "removes" a user. No rows are deleted by this function.
 
         Arguments:
-            city {String} -- The user's city.
             id {UUID} -- The user's unique ID.
         """
         return run_transaction(
             self.sessionmaker,
-            lambda session: remove_user_txn(session, city, user_id))
+            lambda session: remove_user_txn(session, user_id))
 
-    def remove_vehicle(self, city, vehicle_id):
+    def remove_vehicle(self, vehicle_id):
         """
         Wraps a `run_transaction` call that "removes" a vehicle. No rows are deleted by this function.
 
         Arguments:
-            city {String} -- The vehicle's city.
             id {UUID} -- The vehicle's unique ID.
         """
         return run_transaction(
             self.sessionmaker,
-            lambda session: remove_vehicle_txn(session, city, vehicle_id))
+            lambda session: remove_vehicle_txn(session, vehicle_id))
 
-    def add_vehicle(self,
-                    city,
-                    owner_id,
-                    last_location,
-                    type,
-                    color,
-                    brand,
-                    status,
-                    is_owner=False):
+    def add_vehicle(self, city, owner_id, last_location, type, color, brand, status, is_owner=False):
         """
         Wraps a `run_transaction` call that adds a vehicle.
 
