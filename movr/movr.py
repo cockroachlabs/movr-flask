@@ -150,7 +150,7 @@ class MovR:
 
     def get_rides(self, rider_id):
         """
-        Wraps a `run_transaction` call that gets rides in a particular city as a list of dictionaries.
+        Wraps a `run_transaction` call that gets rides for a particular user as a list of dictionaries.
 
         Arguments:
             rider_id {UUID} -- The user's unique ID.

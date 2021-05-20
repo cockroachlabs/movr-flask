@@ -63,10 +63,11 @@ The steps below walk you through how to start up an insecure, virtual nine-node 
 > to rerun steps 1-3 below upon restarting `cockroach demo` to reinitialize your database 
 > and environment.
 
-1. Run `cockroach demo` in `--insecure` mode with the `--nodes` and `--demo-locality` flags. The database schema provided in this repo assumes the [GCP region names](https://cloud.google.com/about/locations/). 
+1. Run `cockroach demo` in `--insecure` mode with the `--empty`, `--nodes`, and `--demo-locality` flags. The database schema provided in this repo assumes the [GCP region names](https://cloud.google.com/about/locations/). 
 
     ~~~ shell
-    $ cockroach demo --insecure \
+    cockroach demo --insecure \
+    --empty \
     --nodes=9 \
     --demo-locality=region=gcp-us-east1:region=gcp-us-east1:region=gcp-us-east1:region=gcp-us-west1:region=gcp-us-west1:region=gcp-us-west1:region=gcp-europe-west1:region=gcp-europe-west1:region=gcp-europe-west1
     ~~~
@@ -74,35 +75,35 @@ The steps below walk you through how to start up an insecure, virtual nine-node 
     Once the database finishes initializing, you should see a SQL shell prompt:
     
     ~~~
-    root@127.0.0.1:26257/movr> 
+    root@127.0.0.1:26257/defaultdb> 
     ~~~
 
     Keep this terminal window open. Closing it will shut down the virtual cluster.
 
-1. Configure environment variables
+1. Configure environment variables.
     
-    The MovR application uses Google Maps Static API, so we'll also store your
-    Google API Key into an environment variable as well:
+    The MovR application uses Google Maps Static API, so you should store your
+    Google API Key in an environment variable named `MOVR_MAPS_API`:
     
     ~~~
     export MOVR_MAPS_API=<your_google_api_key>
     ~~~
 
-2. Import initial application data and configure your `.env`.
+1. Run `init.sh` to import initial application data and configure your `.env`.
 
-    Next we'll run `./init.sh`, which:
+    `init.sh` does the following:
     
-    - loads `dbinit.sql` into your running CockroachDB cluster, then
+    - loads `dbinit.sql` into your running CockroachDB cluster, and then
     - inserts the variables above into `.env`, which is then used by Pipenv to automatically set those variables in a Pipenv virtual environment.
 
     In order to run the script you'll need to set execute permission on your script:
     
-    ~~~
+    ~~~ shell
     chmod +x init.sh
     ~~~
 
     Now, you're ready to run the script:
-    ~~~
+    ~~~ shell
     ./init.sh    
     ~~~
     
@@ -116,7 +117,7 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
 1. Run the following command to initialize the project's virtual environment:
 
     ~~~ shell
-    $ pipenv --three
+    pipenv --three
     ~~~
 
     `pipenv` creates a `Pipfile` in the current directory. Open this `Pipfile`, and confirm its contents match the following:
@@ -133,7 +134,6 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
     sqlalchemy-cockroachdb = "*"
     psycopg2-binary = "*"
     SQLAlchemy = "*"
-    SQLAlchemy-Utils = "*"
     Flask = "*"
     Flask-SQLAlchemy = "*"
     Flask-WTF = "*"
@@ -150,7 +150,7 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
 1. Run the following command to install the packages listed in the `Pipfile`:
 
     ~~~ shell
-    $ pipenv install
+    pipenv install
     ~~~
 
 1. Configure `.env` further if needed.
@@ -159,7 +159,7 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
     This lets the application read values from an environement variable, rather than us needing to hard-code values directly into the source code.
 
     In [Database and Environment Setup](#database-and-environment-setup) section, you ran `./init.sh` which
-    set the `DB_URI` and `API_KEY` variables in your `.env` file:
+    set the `API_KEY` variable in your `.env` file:
     
     - `DB_URI` is the [SQL connection string](https://en.wikipedia.org/wiki/Connection_string) needed for SQLAlchemy to connect to CockroachDB. Note that SQLAlchemy requires the connection string protocol to be specific to the CockroachDB dialect.
     - `API_KEY` should be your Google Static Maps API Key.
@@ -169,7 +169,7 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
 1. Activate the virtual environment:
 
     ~~~ shell
-    $ pipenv shell
+    pipenv shell
     ~~~
 
     The prompt should now read `~bash-3.2$`. From this shell, you can run any Python3 application with the required dependencies that you listed in the `Pipfile`, and the environment variables that you listed in the `.env` file. You can exit the shell subprocess at any time with a simple `exit` command.
@@ -177,13 +177,13 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
 1. To test out the application, you can simply run the server file:
 
     ~~~ shell
-    $ python3 server.py
+    python3 server.py
     ~~~
 
     You can alternatively use [gunicorn](https://gunicorn.org/).
 
     ~~~ shell
-    $ gunicorn -b localhost:8000 server:app
+    gunicorn -b localhost:8000 server:app
     ~~~
 
 1. Navigate to the URL provided to test out the application.
@@ -227,7 +227,7 @@ To deploy CockroachDB in multiple regions, using [CockroachCloud](https://www.co
 1. Open a new terminal, and run the `dbinit.sql` file on the running cluster to initialize the database. You can connect to the database from any node on the cluster for this step.
 
     ~~~ shell
-    $ cockroach sql --url any-connection-string < dbinit.sql
+    cockroach sql --url any-connection-string < dbinit.sql
     ~~~
 
 
@@ -235,7 +235,7 @@ To deploy CockroachDB in multiple regions, using [CockroachCloud](https://www.co
 
     e.g.,
     ~~~ shell
-    $ cockroach sql --url \ 'postgresql://user:password@region.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=certs-dir/movr-app-ca.crt' < dbinit.sql
+    cockroach sql --url \ 'postgresql://user:password@region.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=certs-dir/movr-app-ca.crt' < dbinit.sql
     ~~~
 
 
@@ -258,21 +258,21 @@ To deploy the application globally, we recommend that you use a major cloud prov
 1. Configure/authorize the `gcloud` CLI to use your project and region.
 
     ~~~ shell
-    $ gcloud init
-    $ gcloud auth login
-    $ gcloud auth application-default login
+    gcloud init
+    gcloud auth login
+    gcloud auth application-default login
     ~~~
 
 1. If you haven't already, install `kubectl`.
 
     ~~~ shell
-    $ gcloud components install kubectl
+    gcloud components install kubectl
     ~~~
 
 1. Build and run the Docker image locally.
 
     ~~~ shell
-    $ docker build -t gcr.io/<gcp_project>/movr-app:v1 .
+    docker build -t gcr.io/<gcp_project>/movr-app:v1 .
     ~~~
 
     If there are no errors, the container built successfully.
@@ -281,32 +281,32 @@ To deploy the application globally, we recommend that you use a major cloud prov
 
     e.g.,
     ~~~ shell
-    $ docker push gcr.io/<gcp_project>/movr-app:v1
+    docker push gcr.io/<gcp_project>/movr-app:v1
     ~~~
 
 1. Create a K8s cluster in each region.
 
     ~~~ shell
-    $ gcloud config set compute/zone us-east1-b && \
+    gcloud config set compute/zone us-east1-b && \
       gcloud container clusters create movr-us-east
-    $ gcloud config set compute/zone us-west1-b && \
+    gcloud config set compute/zone us-west1-b && \
       gcloud container clusters create movr-us-west
-    $ gcloud config set compute/zone europe-west1-b && \
+    gcloud config set compute/zone europe-west1-b && \
       gcloud container clusters create movr-europe-west
     ~~~
 
 1. Add the container credentials to `kubeconfig`.
 
     ~~~ shell
-    $ KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=us-east1-b movr-us-east
-    $ KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=us-west1-b movr-us-west
-    $ KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=europe-west1-b movr-europe-west
+    KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=us-east1-b movr-us-east
+    KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=us-west1-b movr-us-west
+    KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=europe-west1-b movr-europe-west
     ~~~
 
 1. For each cluster context, create a secret for the connection string, Google Maps API (optional), and the certs, and then create the k8s deployment and service using the `movr.yaml` manifest file. To get the context for the cluster, run `kubectl config get-contexts -o name`.
 
     ~~~ shell
-    $ kubectl config use-context <context-name> && \ 
+    kubectl config use-context <context-name> && \ 
     kubectl create secret generic movr-db-cert --from-file=cert=<full-path-to-cert> && \
     kubectl create secret generic movr-db-uri --from-literal=DB_URI="connection-string" && \
     kubectl create secret generic maps-api-key --from-literal=API_KEY="APIkey" \
@@ -318,19 +318,19 @@ To deploy the application globally, we recommend that you use a major cloud prov
 1. Reserve a static IP address for the ingress.
 
     ~~~ shell
-    $ gcloud compute addresses create --global movr-ip
+    gcloud compute addresses create --global movr-ip
     ~~~
 
 1. Download [`kubemci`](https://github.com/GoogleCloudPlatform/k8s-multicluster-ingress), and then make it executable.
 
     ~~~ shell
-    $ chmod +x ~/kubemci
+    chmod +x ~/kubemci
     ~~~
 
 1. Use `kubemci` to make the ingress.
 
     ~~~ shell
-    $ ~/kubemci create movr-mci \
+    ~/kubemci create movr-mci \
     --ingress=<path>/movr-flask/mcingress.yaml \
     --gcp-project=<gcp_project> \
     --kubeconfig=<path>/mcikubeconfig
@@ -355,7 +355,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
 1. Check the status of the ingress.
 
     ~~~ shell
-    $ ~/kubemci list --gcp-project=<gcp_project>
+    ~/kubemci list --gcp-project=<gcp_project>
     ~~~
 
 1. In the **Cloud DNS** console (found under **Network Services**), create a new zone. You can name the zone whatever you want. Enter the same domain name for which you created a certificate earlier.

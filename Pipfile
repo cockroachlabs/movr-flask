@@ -9,7 +9,6 @@ verify_ssl = true
 sqlalchemy-cockroachdb = "*"
 psycopg2-binary = "*"
 SQLAlchemy = "*"
-SQLAlchemy-Utils = "*"
 Flask = "*"
 Flask-SQLAlchemy = "*"
 Flask-WTF = "*"
