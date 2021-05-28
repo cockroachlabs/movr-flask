@@ -6,7 +6,6 @@ from werkzeug.security import check_password_hash
 from movr.movr import MovR
 from web.forms import CredentialForm, RegisterForm, VehicleForm, StartRideForm, EndRideForm, RemoveUserForm, RemoveVehicleForm
 from web.config import Config
-from web.geoutils import get_region
 from sqlalchemy.exc import DBAPIError
 
 DEFAULT_ROUTE_AUTHENTICATED = "vehicles"
@@ -22,6 +21,8 @@ protocol = ('https', 'http')[app.config.get('DEBUG') == 'True']
 # Initialize the db connection
 conn_string = app.config.get('DB_URI')
 movr = MovR(conn_string)
+region = app.config.get('REGION')
+cities = app.config.get('CITY_MAP')[region]
 
 # Update Bootstrap from v3.3.7 to v4.5
 app.extensions['bootstrap']['cdns']['bootstrap'] = WebCDN(
@@ -39,31 +40,14 @@ def load_user(user_id):
 # Index
 @app.route('/', methods=['GET'])
 def index():
-    if app.config.get('DEBUG') == 'True':
-        session['city'] = 'new york'
-        session['region'] = 'gcp-us-east1'
-        flash(
-            'Application is in DEBUG mode. Currently using New York as city and gcp-us-east1 as region.')
-    else:
-        try:
-            place = request.headers.get("X-PLACE").split(",", 1)
-            # This header attribute is passed by the HTTP load balancer, to its
-            # configured backend. The header must be configured manually in the
-            # cloud service provider's console to include this attribute. See
-            # README for more details.
-            session['city'] = place[0].lower()
-            session['latlong'] = place[1]
-            session['region'] = get_region(session['city'], session['latlong'])
-        except Exception as error:
-            session['city'] = 'new york'
-            session['region'] = 'gcp-us-east1'
-            flash(
-                '{0}\n Unable to retrieve client location information.\n Application is now assuming you are in New York.'
-                    .format(error))
+    session['region'] = region
+    session['cities'] = cities
     session['riding'] = None
     if current_user.is_authenticated:
+        session['city'] = current_user.city
         return redirect(url_for(DEFAULT_ROUTE_AUTHENTICATED, _external=True, _scheme=protocol))
     else:
+        session['city'] = cities[0]
         return redirect(url_for(DEFAULT_ROUTE_NOT_AUTHENTICATED, _external=True, _scheme=protocol))
 
 
@@ -116,9 +100,7 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return render_template('register.html',
-                               title='Sign Up',
-                               available=session['region'])
+        return redirect(url_for(DEFAULT_ROUTE_AUTHENTICATED, _external=True, _scheme=protocol))
     else:
         form = RegisterForm()
         if form.validate_on_submit():
@@ -310,6 +292,19 @@ def end_ride(ride_id):
     except Exception as error:
         flash('{0}'.format(error))
         return redirect(url_for('rides', _external=True, _scheme=protocol))
+
+# Set new city route
+@login_required
+@app.route('/city/<city>', methods=['POST'])
+def set_city(city):
+    try:
+        session['city'] = city
+    except Exception as error:
+        flash('{0}'.format(error))
+        session['city'] = current_user.city
+    finally:
+        flash('Now using "{0}" as your current city.'.format(session['city']))
+        return redirect(url_for('vehicles', _external=True, _scheme=protocol))
 
 # Health check
 @app.route('/health', methods=['GET'])

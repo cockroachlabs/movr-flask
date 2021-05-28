@@ -25,9 +25,10 @@ The application stack consists of the following components:
 For both local and production deployment, you'll need:
 
 - [CockroachDB](https://www.cockroachlabs.com/docs/stable/install-cockroachdb-mac.html)
-- A Google API Key, enabled for Maps Static API:
-  - [Create a new Google API Key](https://developers.google.com/maps/documentation/maps-static/get-api-key), if you don't already have one.
-  - If you have an existing key, you can use it for this application by [enabling the Maps Static API](https://console.cloud.google.com/apis/library/static-maps-backend.googleapis.com?q=static).
+- **Optional:** A Google API Key, enabled for the Google Maps JavaScript API and the Google Geocoding API:
+  - [Create a new Google API Key](https://console.cloud.google.com/project/_/apiui/credential), if you don't already have one.
+  - If you have an existing key, you can use it for this application by [enabling the Google Maps JavaScript API and the Geocoding API](https://console.cloud.google.com/apis/library).
+  - Restrict usage of the key to just the Google Maps JavaScript API and the Geocoding API, from your machine's IP address (for local deployments), or from an HTTP referrer (e.g., `*.movr.cloud/*`).
   
 Follow the sections below based on whether you are doing local development or production deployment.
    
@@ -58,10 +59,7 @@ For this, you will need to have the following installed on your local machine:
 In production, you want to start a secure CockroachDB cluster, with nodes on machines located in different areas of the world. For debugging purposes, you can just use the [`cockroach demo`](https://www.cockroachlabs.com/docs/stable/cockroach-demo.html) command. 
 The steps below walk you through how to start up an insecure, virtual nine-node cluster.
 
-> Note: Shutting down a cluster that was run in demo mode erases all data in the database. 
-> Because demo mode doesn't allow you to specify a specific database port, you will need 
-> to rerun steps 1-3 below upon restarting `cockroach demo` to reinitialize your database 
-> and environment.
+**Note:** Shutting down a cluster that was run in demo mode erases all data in the database. Because demo mode doesn't allow you to specify a specific database port, you will need to rerun steps 1-3 below upon restarting `cockroach demo` to reinitialize your database and environment.
 
 1. Run `cockroach demo` in `--insecure` mode with the `--empty`, `--nodes`, and `--demo-locality` flags. The database schema provided in this repo assumes the [GCP region names](https://cloud.google.com/about/locations/). 
 
@@ -80,9 +78,9 @@ The steps below walk you through how to start up an insecure, virtual nine-node 
 
     Keep this terminal window open. Closing it will shut down the virtual cluster.
 
-1. Configure environment variables.
+1. (Optional) Configure environment variables.
     
-    The MovR application uses Google Maps Static API, so you should store your
+    The MovR application uses the Google Maps JavaScript API and the Google Geocoding API, so you should store your
     Google API Key in an environment variable named `MOVR_MAPS_API`:
     
     ~~~
@@ -112,8 +110,8 @@ The steps below walk you through how to start up an insecure, virtual nine-node 
 In production, you probably want to containerize your application and deploy it with k8s. 
 For local deployment and development, use [`pipenv`](https://pypi.org/project/pipenv/), a tool that includes `pip` (to make dependencies) and `virtualenv` (to create virtual environments).
 
-> Note: You only need to initialize your virtual environment once (`pipenv --three; pipenv install`). For ongoing development, you can skip to activating the shell (`pipenv shell`) and then running the server file.
->
+**Note:** You only need to initialize your virtual environment once (`pipenv --three; pipenv install`). For ongoing development, you can skip to activating the shell (`pipenv shell`) and then running the server file.
+
 1. Run the following command to initialize the project's virtual environment:
 
     ~~~ shell
@@ -141,7 +139,6 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
     Flask-Login = "*"
     WTForms = "*"
     gunicorn = "*"
-    geopy = "*"
 
     [requires]
     python_version = "3.7"
@@ -158,11 +155,11 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
     Pipenv automatically sets any variables defined in a `.env` file as environment variables in a Pipenv virtual environment.
     This lets the application read values from an environement variable, rather than us needing to hard-code values directly into the source code.
 
-    In [Database and Environment Setup](#database-and-environment-setup) section, you ran `./init.sh` which
-    set the `API_KEY` variable in your `.env` file:
+    Make sure the following are correct:
     
     - `DB_URI` is the [SQL connection string](https://en.wikipedia.org/wiki/Connection_string) needed for SQLAlchemy to connect to CockroachDB. Note that SQLAlchemy requires the connection string protocol to be specific to the CockroachDB dialect.
-    - `API_KEY` should be your Google Static Maps API Key.
+    - `API_KEY` should be your Google API Key. Recall that, in the [Database and Environment Setup](#database-and-environment-setup) section, you ran `./init.sh` to
+    set the `API_KEY` variable in your `.env` file.
     
     You can also specify other variables in this file that you'd rather not hard-code in the application, like other API keys and secret keys used by the application. For debugging purposes, you should leave these variables as they are.
 
@@ -243,7 +240,7 @@ To deploy CockroachDB in multiple regions, using [CockroachCloud](https://www.co
 
 ### Application deployment
 
-To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service and a Kubernetes engine. For our deployment, we use GCP. 
+To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service and a Kubernetes engine. For our deployment, we use GCP services. 
 
 **Note:** To serve a secure web application that takes HTTPS requests, you also need a public domain name! SSL certificates are not assigned to IP addresses.
 
@@ -251,7 +248,7 @@ To deploy the application globally, we recommend that you use a major cloud prov
 
 1. Create a gcloud project on the [GCP console](https://console.cloud.google.com/).
 
-1. **Optional:** Enable the [Google Maps Static API](https://console.cloud.google.com/apis/library), create an API key, restrict the API key to all subdomains of your domain name (e.g. `https://site.com/*`), and retrieve the API key. 
+1. **Optional:** If you have not already done so, enable the [the Google Maps JavaScript API and the Geocoding API](https://console.cloud.google.com/apis/library), create an API key, restrict the API key to just the Google Maps JavaScript API and the Geocoding API and all subdomains of your domain name (e.g. `*site.com/*`), and then retrieve the API key. 
 
     **Note:** The example HTML templates include maps. Not providing an API key to the application will not break the application.
 

@@ -10,7 +10,7 @@ git checkout -- $envfile
 
 # replace API_key with $MOVR_MAPS_API in `.env` for the following env variable:
 #     API_KEY = 'API_key'
-# where API_KEY is Google Maps Static API Key needed to generate maps on the Vehicles page.
-sed "s/API_key/$MOVR_MAPS_API/" $envfile
+# where API_KEY is Google Geocoding API Key needed to generate maps on the Vehicles page.
+sed -i -- "s/API_key/$MOVR_MAPS_API/" $envfile
 
 echo ".env: API_KEY key has been set"
