@@ -14,11 +14,11 @@ For a detailed tutorial on multi-region application development and deployment f
 The application stack consists of the following components:
 
 - A multi-node, geo-distributed CockroachDB cluster, with each node's locality corresponding to cloud provider regions.
-- A geo-partitioned database schema that defines the tables and indexes for user, vehicle, and ride data.
+- A multi-region database schema that defines the tables and indexes for user, vehicle, and ride data.
 - Python class definitions that map to the tables in our database.
 - A backend API that defines the application's connection to the database and the database transactions.
 - A Flask server that handles requests from client web browsers.
-- HTML files that define web pages that the Flask server renders.
+- HTML, CSS, and JS files that define web pages that the Flask server renders.
 
 ## Requirements
 
@@ -26,6 +26,7 @@ For both local and production deployment, you'll need:
 
 - [CockroachDB](https://www.cockroachlabs.com/docs/stable/install-cockroachdb-mac.html)
 - **Optional:** A Google API Key, enabled for the Google Maps JavaScript API and the Google Geocoding API:
+
   - [Create a new Google API Key](https://console.cloud.google.com/project/_/apiui/credential), if you don't already have one.
   - If you have an existing key, you can use it for this application by [enabling the Google Maps JavaScript API and the Geocoding API](https://console.cloud.google.com/apis/library).
   - Restrict usage of the key to just the Google Maps JavaScript API and the Geocoding API, from your machine's IP address (for local deployments), or from an HTTP referrer (e.g., `*.movr.cloud/*`).
@@ -39,18 +40,17 @@ For local development, you'll need the following:
 - [Python 3](https://www.python.org/downloads/)
 - [`pipenv`](https://docs.pipenv.org/en/latest/install/#installing-pipenv)
 
-There are a number of Python libraries that you also need to run the application, including `flask`, `sqlalchemy`, and `cockroachdb`. 
-Rather than downloading these dependencies directly from PyPi to your machine, you should list them in dependency configuration files 
-(see [Local Deployment](#local-deployment) and [Multi-region deployment](#multi-region-deployment) for examples).
+There are a number of Python libraries that you also need to run the application, including `flask`, `sqlalchemy`, and `cockroachdb`. Rather than downloading these dependencies directly from PyPi to your machine, you should list them in dependency configuration files (see [Local Deployment](#local-deployment) and [Multi-region deployment](#multi-region-deployment) for examples).
 
-#### Requirements For Production Deployment
+#### Requirements For Production Application Deployment
 
-To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service and a Kubernetes engine. For our deployment example, we use GCP.
-For this, you will need to have the following installed on your local machine:
+To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service. For our deployment example, we use Google Cloud Run, and some other GCP services.
 
+To follow along, you will need to have the following:
+
+- A Google Cloud Platform account
 - [Google Cloud SDK](https://cloud.google.com/sdk/install)
 - [Docker](https://docs.docker.com/v17.12/docker-for-mac/install/)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 ## Local Deployment
 
@@ -78,7 +78,7 @@ The steps below walk you through how to start up an insecure, virtual nine-node 
 
     Keep this terminal window open. Closing it will shut down the virtual cluster.
 
-1. (Optional) Configure environment variables.
+1. **Optional** Configure environment variables.
     
     The MovR application uses the Google Maps JavaScript API and the Google Geocoding API, so you should store your
     Google API Key in an environment variable named `MOVR_MAPS_API`:
@@ -180,7 +180,7 @@ For local deployment and development, use [`pipenv`](https://pypi.org/project/pi
     You can alternatively use [gunicorn](https://gunicorn.org/).
 
     ~~~ shell
-    gunicorn -b localhost:8000 server:app
+    gunicorn -b localhost:$PORT server:app
     ~~~
 
 1. Navigate to the URL provided to test out the application.
@@ -213,13 +213,13 @@ To deploy CockroachDB in multiple regions, using [CockroachCloud](https://www.co
 
 1. Select **Connect** at the top-right corner of the cluster console.
 
-1. Select the **User** that you created, and then **Continue**.
+1. Select the **SQL User** that you created, a **Region**, and then **Continue**.
 
 1. Copy the connection string, with the user and password specified.
 
-1. **Go back**, and retrieve the connection strings for the other two regions.
-
 1. Download the cluster cert to your local machine (it's the same for all regions).
+
+1. **Go back**, and retrieve the connection strings for the other two regions.
 
 1. Open a new terminal, and run the `dbinit.sql` file on the running cluster to initialize the database. You can connect to the database from any node on the cluster for this step.
 
@@ -227,12 +227,11 @@ To deploy CockroachDB in multiple regions, using [CockroachCloud](https://www.co
     cockroach sql --url any-connection-string < dbinit.sql
     ~~~
 
-
     **Note:** You need to specify the password in the connection string!
 
     e.g.,
     ~~~ shell
-    cockroach sql --url \ 'postgresql://user:password@region.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=certs-dir/movr-app-ca.crt' < dbinit.sql
+    cockroach sql --url \ 'postgresql://user:password@region.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=certs-dir/movr-db-ca.crt' < dbinit.sql
     ~~~
 
 
@@ -240,11 +239,11 @@ To deploy CockroachDB in multiple regions, using [CockroachCloud](https://www.co
 
 ### Application deployment
 
-To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service and a Kubernetes engine. For our deployment, we use GCP services. 
+To deploy the application globally, we recommend that you use a major cloud provider with a global load-balancing service. For our deployment, we use Google Cloud Platform services. 
 
 **Note:** To serve a secure web application that takes HTTPS requests, you also need a public domain name! SSL certificates are not assigned to IP addresses.
 
-1. If you don't have a glcoud account, create one at https://cloud.google.com/.
+1. If you don't have a gcloud account, create one at [https://cloud.google.com/](https://cloud.google.com/).
 
 1. Create a gcloud project on the [GCP console](https://console.cloud.google.com/).
 
@@ -260,16 +259,12 @@ To deploy the application globally, we recommend that you use a major cloud prov
     gcloud auth application-default login
     ~~~
 
-1. If you haven't already, install `kubectl`.
-
-    ~~~ shell
-    gcloud components install kubectl
-    ~~~
-
 1. Build and run the Docker image locally.
 
+    e.g.,
+
     ~~~ shell
-    docker build -t gcr.io/<gcp_project>/movr-app:v1 .
+    docker build -t gcr.io/<gcp_project>/movr-app:v2 .
     ~~~
 
     If there are no errors, the container built successfully.
@@ -277,83 +272,33 @@ To deploy the application globally, we recommend that you use a major cloud prov
 1. Push the Docker image to the project’s gcloud container registry.
 
     e.g.,
-    ~~~ shell
-    docker push gcr.io/<gcp_project>/movr-app:v1
-    ~~~
-
-1. Create a K8s cluster in each region.
 
     ~~~ shell
-    gcloud config set compute/zone us-east1-b && \
-      gcloud container clusters create movr-us-east
-    gcloud config set compute/zone us-west1-b && \
-      gcloud container clusters create movr-us-west
-    gcloud config set compute/zone europe-west1-b && \
-      gcloud container clusters create movr-europe-west
+    docker push gcr.io/<gcp_project>/movr-app:v2
     ~~~
 
-1. Add the container credentials to `kubeconfig`.
+1. Create a [Google Cloud Run](https://console.cloud.google.com/run/) service for the application, in one of the regions in which the database is deployed (e.g., `gcp-us-east1`).
 
-    ~~~ shell
-    KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=us-east1-b movr-us-east
-    KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=us-west1-b movr-us-west
-    KUBECONFIG=~/mcikubeconfig gcloud container clusters get-credentials --zone=europe-west1-b movr-europe-west
-    ~~~
+1. Deploy a revision of your application to Google Cloud Run. 
 
-1. For each cluster context, create a secret for the connection string, Google Maps API (optional), and the certs, and then create the k8s deployment and service using the `movr.yaml` manifest file. To get the context for the cluster, run `kubectl config get-contexts -o name`.
+    1. Select the container image URL for the image that you just pushed to the container registry.
 
-    ~~~ shell
-    kubectl config use-context <context-name> && \ 
-    kubectl create secret generic movr-db-cert --from-file=cert=<full-path-to-cert> && \
-    kubectl create secret generic movr-db-uri --from-literal=DB_URI="connection-string" && \
-    kubectl create secret generic maps-api-key --from-literal=API_KEY="APIkey" \
-    kubectl create -f ~/movr-flask/movr.yaml
-    ~~~
+    1. Under **Advanced settings**->**Variables & Secrets**, do the following:
 
-    **Note:** You need to do this for each cluster context!
+        - Set an environment variable named `DB_URI` to the connection string for a gateway node on the CC cluster, in the region in which this first Cloud Run service is located (e.g., `cockroachdb://user:password@movr-db.gcp-us-east1.cockroachlabs.cloud:26257/movr?sslmode=verify-full&sslrootcert=certs/movr-db-ca.crt`).
+        - Set an environment variable named `REGION` to the CC region (e.g., `gcp-us-east1`).
+        - Create a secret for the CC certificate, and mount it on the `certs` volume, with a full path ending in the name of the cert (e.g., `certs/movr-db-ca.crt`). This is the cert downloaded from the CC Console, and referenced in the `DB_URI` connection string.
+        - **Optional:** Create a secret for your Google Maps API key and use it to set the environment variable `API_KEY`.
 
-1. Reserve a static IP address for the ingress.
+1. Repeat these steps for all regions.
 
-    ~~~ shell
-    gcloud compute addresses create --global movr-ip
-    ~~~
+1. Create an [external HTTPS load balancer](https://console.cloud.google.com/net-services/loadbalancing) to route requests to the right service.
 
-1. Download [`kubemci`](https://github.com/GoogleCloudPlatform/k8s-multicluster-ingress), and then make it executable.
+    1. For the backend configuration, create separate network endpoint groups for the Google Cloud Run services in each region.
 
-    ~~~ shell
-    chmod +x ~/kubemci
-    ~~~
+    1. For the frontend configuration, make sure that you use the HTTPS protocol. You can create a [managed IP address](https://console.cloud.google.com/networking/addresses) and a [managed SSL cert](https://console.cloud.google.com/net-services/loadbalancing/advanced/sslCertificates) for the load balancer directly from the load balancer console. For the SSL cert, you will need to specify a domain name.
 
-1. Use `kubemci` to make the ingress.
-
-    ~~~ shell
-    ~/kubemci create movr-mci \
-    --ingress=<path>/movr-flask/mcingress.yaml \
-    --gcp-project=<gcp_project> \
-    --kubeconfig=<path>/mcikubeconfig
-    ~~~
-
-    **Note:** `kubemci` requires full paths.
-
-1. In GCP's **Load balancing** console (found under **Network Services**), select and edit the load balancer that you just created. 
-
-    1. Edit the backend configuration. 
-        - Expand the advanced configurations, and add [a custom header](https://cloud.google.com/load-balancing/docs/user-defined-request-headers): `X-PLACE: {client_city, client_latlong}`. This forwards an additional header to the application telling it what city the client is in, and at what latitude and longitude the client is located. The header name (`X-PLACE`) is hardcoded into the example application. 
-
-    1. Edit the frontend configuration, and add a new frontend.
-        - Under "**Protocol**", select HTTPS.
-        - Under "**IP address**", select the static IP address that you reserved earlier (e.g., "`movr-ip`").
-        - Under "**Certificate**", select "**Create a new certificate**".
-        - On the "**Create a new certificate**" page, give a name to the certificate (e.g., "`movr-ssl-cert`"), check "**Create Google-managed certificate**", and then under "Domains", enter a domain name that you own and want to use for your application.
-    1. Review and finalize the load balancer, and then "**Update**".
-
-    **Note:** It will take several minutes to provision the SSL certificate that you just created for the frontend.
-
-1. Check the status of the ingress.
-
-    ~~~ shell
-    ~/kubemci list --gcp-project=<gcp_project>
-    ~~~
+    For detailed instructions on setting up a load balancer for a multi-region Google Cloud Run backend, see the [GCP Load Balancer docs](https://cloud.google.com/load-balancing/docs/https/setting-up-https-serverless#ip-address).
 
 1. In the **Cloud DNS** console (found under **Network Services**), create a new zone. You can name the zone whatever you want. Enter the same domain name for which you created a certificate earlier.
 
@@ -363,6 +308,6 @@ To deploy the application globally, we recommend that you use a major cloud prov
 
     **Note:** It can take up to 48 hours for changes to the authorative nameserver list to take effect.
 
-1. Navigate to the domain name and test out your application.
+1. Navigate to the domain name and test out your application. Our public-facing movr app is accessible at [https://movr.cloud](https://movr.cloud)
 
 1. Clean up (at your leisure).

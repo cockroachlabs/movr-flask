@@ -208,13 +208,16 @@ def add_vehicle():
                              brand=form.brand.data,
                              status='available',
                              is_owner=current_user.is_owner)
-            flash('Vehicle added!')
+            flash('Vehicle added in {0}!'.format(current_user.city.title()))
             return redirect(
                 url_for('vehicles', _external=True, _scheme=protocol))
         except Exception as error:
             flash('{0}'.format(error))
             return redirect(
                 url_for('vehicles', _external=True, _scheme=protocol))
+    if session['city'] != current_user.city:
+        session['city'] = current_user.city
+        flash('You can only add vehicles in your home city, {0}.'.format(current_user.city.title()))
     return render_template('vehicles-add.html',
                            title='Add a vehicle',
                            form=form,
@@ -303,7 +306,7 @@ def set_city(city):
         flash('{0}'.format(error))
         session['city'] = current_user.city
     finally:
-        flash('Now using "{0}" as your current city.'.format(session['city']))
+        flash('Now using {0} as your current city.'.format(session['city'].title()))
         return redirect(url_for('vehicles', _external=True, _scheme=protocol))
 
 # Health check
