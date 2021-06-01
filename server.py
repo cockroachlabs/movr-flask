@@ -309,16 +309,6 @@ def set_city(city):
         flash('Now using {0} as your current city.'.format(session['city'].title()))
         return redirect(url_for('vehicles', _external=True, _scheme=protocol))
 
-# Health check
-@app.route('/health', methods=['GET'])
-def health():
-    try:
-        print('Health check.')
-        status_code = Response(status=200)
-        print(str(status_code))
-        return status_code
-    except Exception as error:
-        return error
 
 if __name__ == '__main__':
     app.run()
