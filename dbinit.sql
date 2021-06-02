@@ -2,10 +2,13 @@ SET sql_safe_updates = FALSE;
 
 DROP DATABASE IF EXISTS movr CASCADE;
 
+-- START database
 CREATE DATABASE movr PRIMARY REGION "gcp-us-east1" REGIONS "gcp-us-east1", "gcp-europe-west1", "gcp-us-west1";
+-- END database
 
 USE movr;
 
+-- START users
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   city STRING NOT NULL,
@@ -17,7 +20,10 @@ CREATE TABLE IF NOT EXISTS users (
   is_owner bool,
   UNIQUE INDEX users_username_key (username ASC)) 
   LOCALITY REGIONAL BY ROW;
+-- END users
 
+
+-- START vehicles
 CREATE TABLE vehicles (
     id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
     type STRING,
@@ -30,7 +36,10 @@ CREATE TABLE vehicles (
     brand STRING, 
     CONSTRAINT fk_ref_users FOREIGN KEY (owner_id) REFERENCES users (id))
     LOCALITY REGIONAL BY ROW;
+-- END vehicles
 
+
+-- START rides
 CREATE TABLE rides (
   id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   city STRING NOT NULL,
@@ -44,6 +53,8 @@ CREATE TABLE rides (
   CONSTRAINT fk_city_ref_users FOREIGN KEY (rider_id) REFERENCES users (id),
   CONSTRAINT fk_vehicle_ref_vehicles FOREIGN KEY (vehicle_id) REFERENCES vehicles (id)) 
   LOCALITY REGIONAL BY ROW;
+-- END rides
+
 
 INSERT INTO users (id, city, first_name, last_name, email, username)
   VALUES ('2804df7c-d8fd-4b1c-9799-b1d44452554b', 'new york', 'Carl', 'Kimball', 'carl@cockroachlabs.com', 'carl');

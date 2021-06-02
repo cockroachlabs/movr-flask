@@ -1,4 +1,5 @@
 # This file contains the main web application server
+# START front
 from flask import Flask, render_template, session, redirect, flash, url_for, Markup, request, Response
 from flask_bootstrap import Bootstrap, WebCDN
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
@@ -7,7 +8,9 @@ from movr.movr import MovR
 from web.forms import CredentialForm, RegisterForm, VehicleForm, StartRideForm, EndRideForm, RemoveUserForm, RemoveVehicleForm
 from web.config import Config
 from sqlalchemy.exc import DBAPIError
+# END front
 
+# START init
 DEFAULT_ROUTE_AUTHENTICATED = "vehicles"
 DEFAULT_ROUTE_NOT_AUTHENTICATED = "login_page"
 
@@ -17,10 +20,14 @@ app.config.from_object(Config)
 Bootstrap(app)
 login = LoginManager(app)
 protocol = ('https', 'http')[app.config.get('DEBUG') == 'True']
+# END init
 
 # Initialize the db connection
+# START connect
 conn_string = app.config.get('DB_URI')
 movr = MovR(conn_string)
+# END connect
+
 region = app.config.get('REGION')
 cities = app.config.get('CITY_MAP')[region]
 
@@ -30,14 +37,17 @@ app.extensions['bootstrap']['cdns']['bootstrap'] = WebCDN(
 )
 
 # Define user_loader function for LoginManager
+# START user_loader
 @login.user_loader
 def load_user(user_id):
     return movr.get_user(user_id=user_id)
+# END user_loader
 
 
 # ROUTES
 
 # Index
+# START index
 @app.route('/', methods=['GET'])
 def index():
     session['region'] = region
@@ -49,9 +59,11 @@ def index():
     else:
         session['city'] = cities[0]
         return redirect(url_for(DEFAULT_ROUTE_NOT_AUTHENTICATED, _external=True, _scheme=protocol))
+# END index
 
 
 # Login page
+# START login_page
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
     if current_user.is_authenticated:
@@ -84,6 +96,7 @@ def login_page():
                                title='Log In',
                                form=form,
                                available=session['region'])
+# END login_page
 
 
 # Logout route

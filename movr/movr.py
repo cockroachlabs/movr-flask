@@ -1,3 +1,4 @@
+# START front
 from movr.transactions import start_ride_txn, end_ride_txn, add_user_txn, add_vehicle_txn, get_users_txn, get_user_txn, get_vehicles_txn, get_rides_txn, remove_user_txn, remove_vehicle_txn
 from cockroachdb.sqlalchemy import run_transaction
 from sqlalchemy import create_engine
@@ -21,7 +22,9 @@ class MovR:
         """
         self.engine = create_engine(conn_string, convert_unicode=True)
         self.sessionmaker = sessionmaker(bind=self.engine)
+# END front
 
+# START start_ride
     def start_ride(self, city, rider_id, vehicle_id):
         """
         Wraps a `run_transaction` call that starts a ride.
@@ -34,6 +37,7 @@ class MovR:
         return run_transaction(
             self.sessionmaker, lambda session: start_ride_txn(
                 session, city, rider_id, vehicle_id))
+# END start_ride
 
     def end_ride(self, ride_id, location):
         """
