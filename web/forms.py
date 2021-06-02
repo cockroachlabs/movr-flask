@@ -3,12 +3,14 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import data_required
 
 
+# START CredentialForm
 class CredentialForm(FlaskForm):
     """Login form class.
     """
     username = StringField('Username: ', validators=[data_required()])
     password = PasswordField('Password: ', validators=[data_required()])
     submit = SubmitField('Sign In')
+# END CredentialForm
 
 
 class StartRideForm(FlaskForm):
@@ -25,6 +27,7 @@ class EndRideForm(FlaskForm):
     submit = SubmitField('End ride')
 
 
+# START VehicleForm
 class VehicleForm(FlaskForm):
     """Vehicle registration form class.
     """
@@ -36,6 +39,7 @@ class VehicleForm(FlaskForm):
     location = StringField(label='Current location: ',
                            validators=[data_required()])
     submit = SubmitField('Add vehicle')
+# END VehicleForm
 
 
 class RemoveVehicleForm(FlaskForm):

@@ -1,8 +1,11 @@
+# START front
 from movr.models import Vehicle, Ride, User
 import datetime
 import uuid
+# END front
 
 
+# START start_ride_txn
 def start_ride_txn(session, city, rider_id, rider_city, vehicle_id):
     """
     Insert a new row into the rides table and update a row of the vehicles table.
@@ -25,6 +28,7 @@ def start_ride_txn(session, city, rider_id, rider_city, vehicle_id):
              start_time=datetime.datetime.now(datetime.timezone.utc))
     session.add(r)
     v.status = "unavailable"
+# END start_ride_txn
 
 
 def end_ride_txn(session, city, ride_id, location):
@@ -199,6 +203,7 @@ def get_user_txn(session, username=None, user_id=None):
     return u
 
 
+# START get_vehicles_txn
 def get_vehicles_txn(session, city):
     """
     Select the rows of the vehicles table for a specific city.
@@ -225,8 +230,10 @@ def get_vehicles_txn(session, city):
                 'color': vehicle.color,
                 'brand': vehicle.brand
             }, vehicles))
+# END get_vehicles_txn
 
 
+# START get_rides_txn
 def get_rides_txn(session, rider_id):
     """
     Select the rows of the rides table for a specific user.
@@ -251,3 +258,4 @@ def get_rides_txn(session, rider_id):
                 'rider_id': ride.rider_id,
                 'length': ride.length
             }, rides))
+# END get_rides_txn

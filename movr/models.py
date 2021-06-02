@@ -1,3 +1,4 @@
+# START front
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, DateTime, Boolean, Interval, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.types import DATE
@@ -7,8 +8,9 @@ from werkzeug.security import generate_password_hash
 from flask_login import UserMixin
 
 Base = declarative_base()
+# END front
 
-
+# START User
 class User(Base, UserMixin):
     """
     Represents rows of the users table.
@@ -40,8 +42,10 @@ class User(Base, UserMixin):
     def __repr__(self):
         return "<User(city='{0}', id='{1}', name='{2}')>".format(
             self.city, self.id, self.first_name + ' ' + self.last_name)
+# END User
 
 
+# START Vehicle
 class Vehicle(Base):
     """
     Represents rows of the vehicles table.
@@ -67,8 +71,10 @@ class Vehicle(Base):
     def __repr__(self):
         return "<Vehicle(city='{0}', id='{1}', type='{2}', status='{3}')>".format(
             self.city, self.id, self.type, self.status)
+# END Vehicle
 
 
+# START Ride
 class Ride(Base):
     """
     Represents rows of the rides table.
@@ -95,3 +101,4 @@ class Ride(Base):
     def __repr__(self):
         return "<Ride(city='{0}', id='{1}', rider_id='{2}', vehicle_id='{3}')>".format(
             self.city, self.id, self.rider_id, self.vehicle_id)
+# END Ride

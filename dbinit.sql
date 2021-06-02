@@ -9,7 +9,7 @@ CREATE DATABASE movr;
 
 USE movr;
 
-
+-- START users
 CREATE TABLE IF NOT EXISTS users (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     city STRING NOT NULL,
@@ -36,8 +36,10 @@ ALTER PARTITION us_east OF INDEX movr.public.users@primary CONFIGURE ZONE USING
 ALTER PARTITION us_west OF INDEX movr.public.users@primary CONFIGURE ZONE USING
     constraints = '[+region=gcp-us-west1]'
 ;
+-- END users
 
 
+-- START vehicles
 CREATE TABLE IF NOT EXISTS vehicles (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     city STRING NOT NULL,
@@ -76,8 +78,10 @@ ALTER PARTITION us_east OF INDEX movr.public.vehicles@vehicles_auto_index_fk_cit
 ALTER PARTITION us_west OF INDEX movr.public.vehicles@vehicles_auto_index_fk_city_ref_users CONFIGURE ZONE USING
     constraints = '[+region=gcp-us-west1]'
 ;
+-- END vehicles
 
 
+-- START rides
 CREATE TABLE rides (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     city STRING NOT NULL,
@@ -128,6 +132,7 @@ ALTER PARTITION us_east OF INDEX movr.public.rides@rides_auto_index_fk_vehicle_c
 ALTER PARTITION us_west OF INDEX movr.public.rides@rides_auto_index_fk_vehicle_city_ref_vehicles CONFIGURE ZONE USING
     constraints = '[+region=gcp-us-west1]'
 ;
+-- END rides
 
 
 INSERT INTO users (id, city, first_name, last_name, email, username) VALUES 
