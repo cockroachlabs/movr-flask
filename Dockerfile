@@ -7,6 +7,7 @@ COPY web ./web
 COPY __init__.py ./
 COPY requirements.txt ./
 COPY server.py ./
+COPY certs ./certs
 
 RUN pip install -r requirements.txt
 
