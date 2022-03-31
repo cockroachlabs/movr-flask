@@ -29,7 +29,7 @@ For both local and production deployment, you'll need:
 
   - [Create a new Google API Key](https://console.cloud.google.com/project/_/apiui/credential), if you don't already have one.
   - If you have an existing key, you can use it for this application by [enabling the Google Maps JavaScript API and the Geocoding API](https://console.cloud.google.com/apis/library).
-  - Restrict usage of the key to just the Google Maps JavaScript API and the Geocoding API, from your machine's IP address (for local deployments), or from an HTTP referrer (e.g., `*.movr.cloud/*`).
+  - Restrict usage of the key to just the Google Maps JavaScript API and the Geocoding API, from your machine's IP address (for local deployments), or from an HTTP referrer (e.g., `*.movr.com/*`).
   
 Follow the sections below based on whether you are doing local development or production deployment.
    
@@ -308,6 +308,6 @@ To deploy the application globally, we recommend that you use a major cloud prov
 
     **Note:** It can take up to 48 hours for changes to the authorative nameserver list to take effect.
 
-1. Navigate to the domain name and test out your application. Our public-facing movr app is accessible at [https://movr.cloud](https://movr.cloud)
+1. Navigate to the domain name and test out your application.
 
 1. Clean up (at your leisure).
